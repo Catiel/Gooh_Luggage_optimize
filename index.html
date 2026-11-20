@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>行李清单用户反馈分析</title>
+  <title>行李清单重构方案 V2.0</title>
   <style>
     :root {
       --ink: #202326;
@@ -874,28 +874,680 @@
       .module-flow-arrow { font-size: 0; }
       .module-phone-wrap { position: static; max-width: 390px; margin: 0 auto; }
     }
+
+    /* Frontend Design polish: quiet, precise Gooh travel utility UI. */
+    .module-demo-layout { gap: 34px; }
+    .module-phone-wrap { filter: drop-shadow(0 20px 34px rgba(22, 30, 35, .13)); }
+    .demo-phone {
+      background: #f6f7f8;
+      border: 7px solid #1c2023;
+      border-radius: 46px;
+      box-shadow: 0 2px 0 rgba(255,255,255,.16) inset, 0 24px 60px rgba(22,30,35,.16);
+    }
+    .demo-phone::before {
+      top: 8px;
+      width: 88px;
+      height: 23px;
+      background: #1c2023;
+      border-radius: 0 0 15px 15px;
+    }
+    .demo-phone::after {
+      content: "";
+      position: absolute;
+      z-index: 40;
+      bottom: 7px;
+      left: 50%;
+      width: 112px;
+      height: 4px;
+      transform: translateX(-50%);
+      background: rgba(25,28,30,.82);
+      border-radius: 4px;
+    }
+    .module-stage, .demo-stage {
+      padding: 19px 16px 92px;
+      color: #181b1d;
+      background: #f6f7f8;
+      font-size: 13px;
+      line-height: 1.45;
+    }
+    .demo-status {
+      margin: 3px 5px 20px;
+      color: #111416;
+      font-size: 11px;
+      letter-spacing: 0;
+    }
+    .demo-top {
+      grid-template-columns: 48px 1fr 78px;
+      min-height: 48px;
+      margin-bottom: 7px;
+      font-size: 16px;
+    }
+    .demo-top > span:nth-child(2) {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .demo-top button, .demo-top .text-action { min-height: 40px; font-size: 13px; }
+    .demo-top button:first-child { font-size: 25px; }
+    .demo-top .text-action { color: #159fdf; font-weight: 700; white-space: nowrap; }
+    .plan-view-tabs, .asset-tabs, .validation-state {
+      min-height: 44px;
+      padding: 4px;
+      background: #e9edef;
+      border: 1px solid #e4e8ea;
+      border-radius: 12px;
+    }
+    .demo-segments button {
+      min-height: 34px;
+      color: #626b70;
+      border-radius: 9px;
+      font-size: 12px;
+      transition: color .16s ease, background .16s ease, transform .12s ease;
+    }
+    .demo-segments button:active { transform: scale(.98); }
+    .demo-segments button.selected {
+      color: #171a1c;
+      background: #fff;
+      box-shadow: 0 1px 2px rgba(20,28,32,.08), 0 4px 12px rgba(20,28,32,.05);
+    }
+    .personal-progress { margin: 15px 2px 4px; }
+    .personal-progress small { color: #7a848a; font-size: 11px; }
+    .personal-progress b { font-size: 15px; }
+    .demo-progress { height: 6px; margin: 8px 0 2px; background: #e2e7e9; border-radius: 6px; }
+    .demo-progress i { background: #2db1ed; border-radius: inherit; }
+    .demo-list-group {
+      margin-top: 13px;
+      overflow: hidden;
+      background: #fff;
+      border: 1px solid #e1e5e7;
+      border-radius: 14px;
+      box-shadow: 0 2px 10px rgba(24,31,35,.035);
+    }
+    .demo-group-head {
+      min-height: 44px;
+      align-items: center;
+      padding: 10px 13px;
+      background: #f0f3f4;
+      border-bottom: 1px solid #e5e9eb;
+    }
+    .demo-group-head span { font-size: 14px; }
+    .demo-group-head small { color: #7d878d; font-size: 11px; }
+    .shared-info-row {
+      min-height: 72px;
+      padding: 11px 13px;
+      background: #fff;
+      border-color: #e7eaec;
+      transition: background .15s ease;
+    }
+    .shared-info-row:active { background: #f5f8f9; }
+    .shared-info-row b { font-size: 15px; line-height: 1.35; }
+    .shared-info-row span { margin-top: 3px; color: #4c575d; font-size: 11px; line-height: 1.4; }
+    .shared-info-row small { margin-top: 4px; color: #168dc6; font-size: 11px; line-height: 1.4; }
+    .personal-edit-row { min-height: 62px; padding: 0 13px; border-color: #e7eaec; }
+    .personal-edit-row > button:first-child { padding: 10px 0; }
+    .personal-edit-row b { font-size: 15px; }
+    .personal-edit-row small { margin-top: 3px; color: #7d878d; font-size: 11px; }
+    .personal-edit-row em {
+      margin-left: 5px;
+      padding: 2px 6px;
+      color: #128fc9;
+      background: #e5f6fd;
+      border-radius: 5px;
+      font-size: 9px;
+      font-weight: 700;
+    }
+    .carry-check {
+      width: 22px;
+      height: 22px;
+      color: #fff;
+      background: #31b5ef;
+      border: 2px solid #31b5ef;
+      font-size: 12px;
+      box-shadow: none;
+    }
+    .carry-check.off { background: #fff; border-color: #cbd2d6; }
+    .gooh-add-button {
+      position: sticky;
+      z-index: 6;
+      bottom: 10px;
+      min-width: 148px;
+      min-height: 50px;
+      margin: 18px 0 0 auto;
+      padding: 0 22px;
+      color: #fff;
+      background: #1d2022;
+      border-radius: 26px;
+      box-shadow: 0 10px 24px rgba(28,32,34,.18);
+      font-size: 14px;
+    }
+    .picker-context {
+      margin: 12px 0;
+      padding: 10px 12px;
+      color: #667178;
+      background: #edf1f2;
+      border-radius: 10px;
+      font-size: 11px;
+    }
+    .plan-picker-list > div, .reference-row { min-height: 62px; padding: 10px 13px; }
+    .reference-row b, .plan-picker-list b { font-size: 14px; }
+    .reference-row small, .plan-picker-list small { color: #7d878d; font-size: 11px; }
+    .reference-row i { color: #8d979c; }
+    .picker-selection-bar {
+      padding: 12px 16px 16px;
+      background: rgba(255,255,255,.97);
+      border-top: 1px solid #e2e6e8;
+      box-shadow: 0 -8px 20px rgba(30,36,40,.05);
+      backdrop-filter: blur(12px);
+    }
+    .picker-selection-bar span { font-size: 12px; }
+    .picker-selection-bar button { min-height: 48px; border-radius: 25px; font-size: 14px; }
+    .template-choice-list { gap: 9px; }
+    .template-choice-list button {
+      min-height: 74px;
+      padding: 13px 15px;
+      background: #fff;
+      border-color: #e1e5e7;
+      border-radius: 13px;
+      box-shadow: 0 2px 8px rgba(20,28,32,.03);
+    }
+    .template-choice-list b { font-size: 15px; }
+    .template-choice-list small { font-size: 11px; }
+    .template-detail-head {
+      margin: 12px 0 13px;
+      padding: 16px;
+      color: #fff;
+      background: #24456f;
+      border-radius: 14px;
+      box-shadow: 0 8px 18px rgba(36,69,111,.14);
+    }
+    .template-detail-head small, .template-detail-head b, .template-detail-head span { display: block; }
+    .template-detail-head small { color: #b9d3ef; font-size: 10px; }
+    .template-detail-head b { margin-top: 5px; font-size: 19px; }
+    .template-detail-head span { margin-top: 4px; color: #d8e5f2; font-size: 11px; }
+    .template-detail-actions { margin-top: 14px; }
+    .template-detail-actions button { min-height: 50px; }
+    .asset-category-list, .category-manage-list, .system-picker-list, .sort-category-list {
+      border: 1px solid #e1e5e7;
+      border-radius: 14px;
+      box-shadow: 0 2px 10px rgba(24,31,35,.035);
+    }
+    .category-manage-list > div, .system-picker-list > div, .sort-category-list > div { min-height: 60px; }
+    .category-manage-list b, .system-picker-list b, .sort-category-list b { font-size: 14px; }
+    .category-manage-list span, .sort-category-list span { font-size: 10px; }
+    .template-list-card {
+      margin-top: 11px;
+      background: #fff;
+      border: 1px solid #e1e5e7;
+      border-radius: 14px;
+      box-shadow: 0 2px 10px rgba(24,31,35,.035);
+    }
+    .template-main { min-height: 94px; padding: 15px; }
+    .template-main b { margin: 4px 0; font-size: 16px; }
+    .template-main small, .template-main span { font-size: 11px; }
+    .demo-modal-layer { backdrop-filter: blur(1px); }
+    .demo-modal-backdrop { background: rgba(17,21,23,.48); }
+    .demo-modal.gooh-sheet {
+      max-height: 86%;
+      padding: 0 16px 18px;
+      border-radius: 28px 28px 0 0;
+      box-shadow: 0 -18px 46px rgba(15,20,22,.18);
+    }
+    .demo-modal.gooh-sheet header {
+      grid-template-columns: 38px 1fr 38px;
+      min-height: 72px;
+      padding: 13px 0 10px;
+    }
+    .demo-modal.gooh-sheet header b { font-size: 19px; line-height: 1.25; }
+    .demo-modal.gooh-sheet header button {
+      width: 32px;
+      height: 32px;
+      color: #7e898f;
+      background: #f1f3f4;
+      border-radius: 50%;
+      font-size: 15px;
+    }
+    .carry-summary {
+      gap: 5px;
+      margin-bottom: 11px;
+      padding: 14px 15px;
+      background: #e5f6fd;
+      border: 1px solid #d8f0fa;
+      border-radius: 14px;
+    }
+    .carry-summary b { font-size: 15px; }
+    .carry-summary span, .carry-summary small { font-size: 11px; line-height: 1.45; }
+    .gooh-setting-row {
+      min-height: 68px;
+      padding: 13px 15px;
+      background: #f4f6f7;
+      border: 1px solid #f0f2f3;
+      border-radius: 14px;
+    }
+    .gooh-setting-row small { font-size: 10px; }
+    .gooh-setting-row b { font-size: 15px; }
+    .gooh-sheet-actions button, .full-action, .blue-primary.picker-save {
+      min-height: 50px;
+      border-radius: 26px;
+      font-size: 14px;
+      box-shadow: 0 7px 16px rgba(39,169,232,.15);
+    }
+    .sync-warning {
+      margin-bottom: 11px;
+      padding: 11px 13px;
+      color: #84560e;
+      background: #fff3df;
+      border: 1px solid #f7e5c6;
+      border-radius: 11px;
+      font-size: 11px;
+      line-height: 1.45;
+    }
+    .gooh-form { gap: 9px; }
+    .gooh-form label {
+      min-height: 64px;
+      padding: 11px 14px;
+      color: #7d878d;
+      background: #f4f6f7;
+      border: 1px solid #f0f2f3;
+      border-radius: 14px;
+      font-size: 12px;
+    }
+    .gooh-form input, .gooh-form label > button { font-size: 14px; }
+    .gooh-stepper button { width: 30px; height: 30px; border-radius: 9px; }
+    .demo-switch { width: 38px; height: 22px; flex-basis: 38px; background: #cbd2d6; }
+    .demo-switch::after { top: 3px; left: 3px; width: 16px; height: 16px; box-shadow: 0 1px 3px rgba(0,0,0,.15); }
+    .demo-switch.on { background: #169274; }
+    .demo-switch.on::after { left: 19px; }
+    .gooh-dual-actions { gap: 10px; margin-top: 18px; }
+    .gooh-dual-actions button { min-height: 50px; border-radius: 26px; font-size: 14px; }
+    .confirm-copy {
+      gap: 9px;
+      min-height: 126px;
+      padding: 19px 16px;
+      background: #f6f7f8;
+      border: 1px solid #f0f2f3;
+      border-radius: 15px;
+    }
+    .confirm-copy b { font-size: 15px; }
+    .confirm-copy span { font-size: 11px; line-height: 1.55; }
+    .template-validation {
+      gap: 6px;
+      padding: 14px 15px;
+      background: #f4f6f7;
+      border: 1px solid #eff2f3;
+      border-radius: 14px;
+    }
+    .template-validation b { font-size: 14px; }
+    .template-validation span { font-size: 12px; }
+    .template-validation small, .template-mode-field > small { font-size: 11px; line-height: 1.45; }
+    .gooh-check-list {
+      background: #f7f8f8;
+      border: 1px solid #edf0f1;
+      border-radius: 14px;
+    }
+    .gooh-check-list label, .category-picker-list button { min-height: 58px; padding: 0 15px; }
+    .category-picker-list span { font-size: 14px; }
+    .category-picker-list i { font-size: 10px; }
+    .gooh-opinions article { padding: 14px 15px; border: 1px solid #eef1f2; border-radius: 14px; }
+    .gooh-opinions article.mine { background: #e8f7fd; border-color: #d9f0fa; }
+    .gooh-opinions p { font-size: 12px; line-height: 1.55; }
+    .gooh-empty { min-height: 230px; }
+    .gooh-empty b { font-size: 15px; }
+    .gooh-empty span { margin-top: 5px; font-size: 11px; }
+    .gooh-source-grid { gap: 8px; }
+    .gooh-source-grid button {
+      min-height: 118px;
+      padding: 12px 8px;
+      background: #f4f6f7;
+      border: 1px solid #eef1f2;
+      border-radius: 14px;
+    }
+    .gooh-source-grid i { width: 40px; height: 40px; color: #159fdf; border-radius: 11px; }
+    .gooh-source-grid b { margin-top: 6px; font-size: 13px; }
+    .gooh-source-grid span { margin-top: 2px; font-size: 9px; line-height: 1.35; }
+    .demo-toast {
+      bottom: 82px;
+      padding: 10px 14px;
+      background: rgba(25,29,31,.92);
+      border-radius: 10px;
+      font-size: 11px;
+      backdrop-filter: blur(8px);
+    }
+    .module-logic { gap: 12px; }
+    .module-logic-head { padding: 3px 0 15px; border-bottom: 1px solid #e1e5e7; }
+    .module-logic-head small { color: #168fc8; font-size: 12px; }
+    .module-logic-head h3 { margin-top: 5px; font-size: 24px; }
+    .module-logic-head p { max-width: 680px; line-height: 1.65; }
+    .logic-item {
+      padding: 15px 16px;
+      background: #fff;
+      border: 1px solid #e1e5e7;
+      border-left: 4px solid #2aaeea;
+      border-radius: 0 10px 10px 0;
+      box-shadow: 0 3px 12px rgba(24,31,35,.035);
+    }
+    .logic-item b { font-size: 14px; }
+    .logic-item span { margin-top: 5px; line-height: 1.6; }
+    .logic-item.system { background: #fff7e9; border-color: #f1dfbe; border-left-color: #b77a1a; }
+    .module-demo-layout {
+      grid-template-columns: 200px minmax(330px, 390px) minmax(260px, 1fr);
+      gap: 24px;
+    }
+    .dynamic-page-nav {
+      position: sticky;
+      top: 76px;
+      display: grid;
+      gap: 18px;
+      align-self: start;
+      max-height: calc(100vh - 96px);
+      overflow-y: auto;
+      padding-right: 4px;
+      scrollbar-width: thin;
+    }
+    .dynamic-page-nav section { padding: 12px; background: #fff; border: 1px solid #e1e5e7; border-radius: 12px; }
+    .dynamic-page-nav h3 { margin: 0 0 8px; color: #667078; font-size: 12px; }
+    .dynamic-page-nav button {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: center;
+      width: 100%;
+      min-height: 38px;
+      padding: 8px 9px;
+      color: #4e585e;
+      text-align: left;
+      background: transparent;
+      border: 0;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 12px;
+    }
+    .dynamic-page-nav button:hover { background: #f4f6f7; }
+    .dynamic-page-nav button.active { color: #157fac; background: #e8f7fd; font-weight: 700; }
+    .dynamic-page-nav button i { color: #a6afb4; font-style: normal; }
+    .profile-card { display: flex; align-items: center; gap: 13px; margin: 18px 0; padding: 17px; background: #fff; border: 1px solid #edf0f1; border-radius: 15px; }
+    .profile-card > i { display: grid; place-items: center; width: 44px; height: 44px; color: #fff; background: #202326; border-radius: 50%; font-style: normal; font-weight: 700; }
+    .profile-card b, .profile-card small { display: block; }
+    .profile-card small { margin-top: 2px; color: #7c858a; font-size: 10px; }
+    .profile-menu { overflow: hidden; background: #fff; border: 1px solid #edf0f1; border-radius: 15px; }
+    .profile-menu button { display: grid; grid-template-columns: 34px 1fr auto; align-items: center; gap: 10px; width: 100%; padding: 15px; text-align: left; background: #fff; border: 0; border-bottom: 1px solid #edf0f1; }
+    .profile-menu button:last-child { border-bottom: 0; }
+    .profile-menu i { display: grid; place-items: center; width: 32px; height: 32px; color: #159fdf; background: #e8f7fd; border-radius: 9px; font-style: normal; }
+    .profile-menu b, .profile-menu small { display: block; }
+    .profile-menu small { margin-top: 2px; color: #7c858a; font-size: 10px; }
+    .profile-menu em { color: #a6afb4; font-style: normal; }
+    .asset-intro { margin: 16px 0 12px; }
+    .asset-intro small, .asset-intro b { display: block; }
+    .asset-intro small { color: #159fdf; font-size: 10px; font-weight: 700; }
+    .asset-intro b { margin-top: 3px; font-size: 15px; }
+    .plan-add-dock {
+      position: sticky;
+      z-index: 8;
+      bottom: 0;
+      display: grid;
+      grid-template-columns: 70px 78px minmax(0, 1fr);
+      gap: 8px;
+      align-items: stretch;
+      margin: 18px -14px -88px;
+      padding: 12px 14px 18px;
+      background: rgba(255,255,255,.97);
+      border-top: 1px solid #e5e8ea;
+      box-shadow: 0 -10px 24px rgba(24,31,35,.06);
+      backdrop-filter: blur(10px);
+    }
+    .plan-add-dock button { border: 0; cursor: pointer; }
+    .plan-add-source {
+      display: grid;
+      grid-template-rows: 28px auto;
+      place-items: center;
+      gap: 3px;
+      min-width: 0;
+      color: #687278;
+      background: transparent;
+      border-radius: 10px !important;
+      font-size: 10px;
+      font-weight: 700;
+    }
+    .plan-add-source i { display: grid; place-items: center; width: 28px; height: 28px; color: #202326; background: #f4f6f7; border: 1px solid #e4e8ea; border-radius: 8px; font-style: normal; font-size: 14px; }
+    .plan-add-source:hover { color: #168fc8; background: #f7fbfd; }
+    .plan-add-source:hover i { color: #168fc8; border-color: #bfe5f5; }
+    .plan-add-primary {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      min-width: 0;
+      min-height: 52px;
+      padding: 0 14px;
+      color: #fff;
+      background: #202326;
+      border-radius: 27px !important;
+      box-shadow: 0 8px 18px rgba(24,31,35,.15);
+      font-size: 12px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+    .plan-add-primary i { font-style: normal; font-size: 20px; font-weight: 400; }
+    .plan-add-primary:hover { background: #111416; }
+    .template-select-list button.selected::after { content: "✓"; display: grid; place-items: center; width: 100%; height: 100%; color: #fff; font-size: 12px; }
+    .static-pages { display: grid; gap: 28px; padding-bottom: 24px; }
+    .static-module-row { padding: 24px; background: #fff; border: 1px solid #e1e5e7; border-radius: 16px; overflow: hidden; }
+    .static-module-row > header { display: grid; grid-template-columns: auto 1fr; gap: 2px 14px; align-items: end; margin-bottom: 18px; }
+    .static-module-row > header small { grid-column: 1 / -1; color: #168fc8; font-weight: 700; }
+    .static-module-row > header h3 { margin: 0; font-size: 22px; }
+    .static-module-row > header p { margin: 0; color: #667078; }
+    .static-flow { display: flex; align-items: flex-start; gap: 16px; overflow-x: auto; padding: 4px 2px 18px; scroll-snap-type: x proximity; scrollbar-width: thin; }
+    .static-page-unit { flex: 0 0 286px; scroll-snap-align: start; }
+    .static-page-label { display: flex; align-items: baseline; gap: 8px; min-height: 35px; }
+    .static-page-label span { color: #168fc8; font-size: 11px; font-weight: 700; }
+    .static-page-label b { font-size: 14px; }
+    .static-phone { position: relative; width: 286px; height: 620px; overflow: hidden; background: #f7f8f8; border: 7px solid #202326; border-radius: 34px; box-shadow: 0 12px 28px rgba(23,32,38,.12); }
+    .static-phone .module-stage { height: 100%; pointer-events: none; }
+    .static-phone .demo-modal-layer { position: absolute; inset: 0; }
+    .static-page-notes { display: grid; gap: 7px; margin: 12px 0 0; padding: 0; list-style: none; }
+    .static-page-notes li { padding: 9px 10px; background: #f4f6f7; border-left: 3px solid #2aaeea; border-radius: 0 8px 8px 0; }
+    .static-page-notes li.system { background: #fff7e9; border-left-color: #b77a1a; }
+    .static-page-notes b, .static-page-notes span { display: block; }
+    .static-page-notes b { font-size: 11px; }
+    .static-page-notes span { margin-top: 2px; color: #667078; font-size: 10px; line-height: 1.5; }
+    .static-arrow { flex: 0 0 18px; padding-top: 300px; color: #9aa3a8; font-size: 18px; }
+    @media (max-width: 1100px) and (min-width: 761px) {
+      .module-demo-layout { grid-template-columns: 180px minmax(330px, 390px); justify-content: center; }
+      .module-logic { grid-column: 1 / -1; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .module-logic-head { grid-column: 1 / -1; }
+    }
+    @media (max-width: 560px) {
+      .module-demo-layout { gap: 20px; }
+      .module-phone-wrap { width: min(100%, 390px); }
+      .module-logic-head h3 { font-size: 22px; }
+      .logic-item { padding: 14px; }
+      .static-module-row { padding: 16px 12px; border-radius: 12px; }
+      .static-module-row > header { display: block; }
+      .static-module-row > header p { margin-top: 5px; font-size: 12px; }
+    }
+    @media (max-width: 760px) {
+      .module-demo-layout { grid-template-columns: 1fr; }
+      .dynamic-page-nav { position: static; display: flex; max-height: none; overflow-x: auto; padding-bottom: 4px; }
+      .dynamic-page-nav section { flex: 0 0 210px; }
+      .module-phone-wrap { position: static; }
+    }
+
+    /* V2 review canvas: content expands naturally; only the browser scrolls. */
+    html { overflow: auto; }
+    body { min-width: 100%; overflow: visible; }
+    .shell { width: max-content; min-width: 100%; max-width: none; padding: 22px 28px 64px; }
+    .masthead { width: 1184px; max-width: calc(100vw - 56px); padding: 20px 26px; border-radius: 8px; }
+    .masthead::after { display: none; }
+    .masthead h1 { margin: 0; max-width: none; font-size: 25px; line-height: 1.25; }
+    .main-tabs { width: 1184px; max-width: calc(100vw - 56px); margin-top: 12px; }
+    .panel-intro { padding: 24px 0 14px; }
+    .panel-intro h2 { margin: 0; font-size: 23px; }
+    .module-demo-layout { display: grid !important; grid-template-columns: 210px 390px 520px !important; gap: 24px; width: max-content; justify-content: start !important; }
+    .dynamic-page-nav { position: static; display: grid !important; width: 210px; max-height: none; overflow: visible !important; padding: 0; }
+    .dynamic-page-nav section { width: 210px; }
+    .module-phone-wrap { position: static; width: 390px; max-width: none; margin: 0; filter: drop-shadow(0 20px 34px rgba(22,30,35,.13)); }
+    .demo-phone { width: 390px; max-width: none; min-height: 844px; height: auto; aspect-ratio: auto; overflow: visible; }
+    .module-stage, .demo-stage { height: auto; min-height: 828px; overflow: visible !important; }
+    .demo-modal, .demo-modal.gooh-sheet, .demo-modal.tall { max-height: none; overflow: visible; }
+    .module-logic { width: 520px; align-content: start; grid-template-columns: 1fr !important; }
+    .module-logic-head { grid-column: auto !important; }
+    .static-pages { width: max-content; }
+    .static-module-row { width: max-content; overflow: visible; }
+    .static-flow { width: max-content; overflow: visible; scroll-snap-type: none; padding-bottom: 6px; }
+    .static-phone { height: auto; min-height: 620px; overflow: visible; }
+    .static-phone .module-stage { height: auto; min-height: 606px; overflow: visible !important; }
+    .plan-add-dock { position: relative; bottom: auto; margin: 18px -14px -88px; }
+    .overall-progress { margin: 14px 0 10px; padding: 16px; color: #fff; background: #234a78; border-radius: 15px; }
+    .overall-progress small { color: #cfe5f2; font-size: 10px; }
+    .overall-progress > div { display: flex; align-items: baseline; justify-content: space-between; margin-top: 3px; }
+    .overall-progress b { font-size: 25px; }
+    .overall-progress strong { font-size: 12px; }
+    .overall-progress > span, .progress-split section span, .shared-own-progress > div { display: block; height: 5px; margin-top: 9px; overflow: hidden; background: rgba(255,255,255,.24); border-radius: 5px; }
+    .overall-progress i, .progress-split section i, .shared-own-progress i { display: block; height: 100%; background: #40b8ed; border-radius: inherit; }
+    .progress-split { display: grid; grid-template-columns: 1fr 1.15fr; gap: 8px; margin-bottom: 12px; }
+    .progress-split section { position: relative; min-width: 0; padding: 12px; background: #fff; border: 1px solid #e6eaec; border-radius: 12px; }
+    .progress-split section > small, .progress-split section > b { display: block; }
+    .progress-split section > small { color: #758087; font-size: 9px; }
+    .progress-split section > b { margin-top: 3px; font-size: 15px; }
+    .progress-split section span { background: #e4e9ec; }
+    .shared-progress-card { padding: 0 !important; overflow: hidden; }
+    .shared-progress-card > button:first-child { display: block; width: 100%; padding: 12px 50px 12px 12px; text-align: left; color: inherit; background: transparent; border: 0; }
+    .shared-progress-card small, .shared-progress-card b { display: block; }
+    .shared-progress-card small { color: #758087; font-size: 9px; }
+    .shared-progress-card b { margin-top: 3px; font-size: 15px; }
+    .discussion-link { position: absolute; top: 9px; right: 8px; padding: 5px 7px; color: #168fc8; background: #e8f7fd; border: 0; border-radius: 7px; font-size: 9px; }
+    .shared-own-progress { margin: 14px 0 12px; padding: 13px; background: #e8f7fd; border-radius: 12px; }
+    .shared-own-progress > span { display: flex; align-items: center; justify-content: space-between; }
+    .shared-own-progress small, .shared-own-progress b { display: block; }
+    .shared-own-progress small { color: #60717a; font-size: 10px; }
+    .shared-own-progress b { font-size: 12px; }
+    .shared-own-progress > div { background: #d4e4eb; }
+    .shared-manage-row { display: grid; grid-template-columns: 1fr auto; align-items: center; min-height: 62px; padding: 0 12px; border-bottom: 1px solid #e7eaec; }
+    .shared-manage-row > button:first-child { min-width: 0; padding: 10px 0; text-align: left; color: #202326; background: transparent; border: 0; }
+    .shared-manage-row b, .shared-manage-row small { display: block; }
+    .shared-manage-row small { margin-top: 2px; color: #778188; font-size: 9px; }
+    .shared-manage-row em { color: #8b9499; font-size: 9px; font-style: normal; }
+    .discussion-page-head { margin: 14px 0 12px; padding: 14px; background: #e8f7fd; border-radius: 12px; }
+    .discussion-page-head b, .discussion-page-head span { display: block; }
+    .discussion-page-head span { margin-top: 3px; color: #60717a; font-size: 9px; }
+    .discussion-thread { margin-top: 10px; padding: 12px; background: #fff; border: 1px solid #e6eaec; border-radius: 13px; }
+    .discussion-thread header { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding-bottom: 9px; border-bottom: 1px solid #edf0f1; }
+    .discussion-thread header b, .discussion-thread header small { display: block; }
+    .discussion-thread header small { color: #7a848a; font-size: 9px; }
+    .discussion-thread header button { padding: 6px 8px; color: #168fc8; background: #e8f7fd; border: 0; border-radius: 8px; font-size: 9px; }
+    .discussion-thread article { display: flex; gap: 8px; padding-top: 10px; }
+    .discussion-thread article > i { display: grid; place-items: center; flex: 0 0 28px; width: 28px; height: 28px; color: #fff; background: #202326; border-radius: 50%; font-size: 9px; font-style: normal; }
+    .discussion-thread article p { margin: 0; }
+    .discussion-thread article b, .discussion-thread article span { display: block; }
+    .discussion-thread article b { font-size: 10px; }
+    .discussion-thread article span { margin-top: 2px; color: #59656c; font-size: 10px; line-height: 1.5; }
+    .asset-template-section { margin-top: 16px; }
+    .asset-template-section > header { display: flex; justify-content: space-between; margin-bottom: 7px; padding: 0 2px; }
+    .asset-template-section > header small { color: #7c858a; font-size: 10px; }
+    .template-list-card.system { border-style: dashed; }
+    .template-detail-head.system { background: #53606a; }
+    .sheet-danger-action { width: 100%; margin-top: 8px; padding: 12px; color: #d45151; background: transparent; border: 0; font-weight: 700; }
+    .overall-progress.compact { margin-bottom: 10px; }
+    .discussion-entry { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 8px; width: 100%; margin-bottom: 12px; padding: 12px 13px; text-align: left; color: #202326; background: #e8f7fd; border: 0; border-radius: 12px; }
+    .discussion-entry b, .discussion-entry small { display: block; }
+    .discussion-entry small { margin-top: 2px; color: #60717a; font-size: 9px; }
+    .discussion-entry i { color: #168fc8; font-size: 18px; font-style: normal; }
+    .combined-list .personal-edit-row em { display: inline-block; margin-left: 5px; padding: 2px 5px; color: #168fc8; background: #e8f7fd; border-radius: 5px; font-size: 8px; font-style: normal; vertical-align: 1px; }
+    .dual-add-dock { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 18px -14px -88px; padding: 12px 14px 18px; background: rgba(255,255,255,.98); border-top: 1px solid #e5e8ea; box-shadow: 0 -10px 24px rgba(24,31,35,.06); }
+    .dual-add-dock button { display: flex; align-items: center; justify-content: center; gap: 5px; min-width: 0; min-height: 50px; padding: 0 9px; color: #202326; background: #fff; border: 1px solid #202326; border-radius: 25px; font-size: 11px; font-weight: 700; white-space: nowrap; }
+    .dual-add-dock button.primary { color: #fff; background: #202326; }
+    .dual-add-dock i { font-size: 18px; font-style: normal; font-weight: 400; }
+    .quick-source-sheet { padding-bottom: 22px !important; background: transparent !important; box-shadow: none !important; }
+    .quick-source-sheet header { margin-bottom: 10px; background: #fff; border-radius: 20px; }
+    .floating-source-actions { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+    .floating-source-actions button { display: grid; place-items: center; gap: 7px; min-height: 92px; padding: 12px 6px; color: #202326; background: #fff; border: 1px solid #e6eaec; border-radius: 18px; box-shadow: 0 10px 24px rgba(24,31,35,.14); }
+    .floating-source-actions i { display: grid; place-items: center; width: 38px; height: 38px; color: #168fc8; background: #e8f7fd; border-radius: 11px; font-size: 17px; font-style: normal; }
+    .floating-source-actions span { font-size: 10px; font-weight: 700; }
+    .picker-disabled { color: #9aa2a7; background: #f7f8f8; }
+    .picker-disabled em { padding: 4px 7px; color: #7d878d; background: #e9edef; border-radius: 7px; font-size: 9px; font-style: normal; }
+    .shared-edit-list { display: grid; gap: 10px; margin-top: 12px; }
+    .shared-edit-list article { padding: 13px; background: #fff; border: 1px solid #e5e9eb; border-radius: 13px; }
+    .shared-edit-list header, .shared-edit-list article > div { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+    .shared-edit-list header { padding-bottom: 10px; border-bottom: 1px solid #edf0f1; }
+    .shared-edit-list header button { color: #d45151; background: transparent; border: 0; font-size: 9px; }
+    .shared-edit-list article > div { min-height: 48px; }
+    .carrier-field { display: grid; grid-template-columns: 1fr auto; align-items: center; width: 100%; padding: 10px 0 0; text-align: left; color: #202326; background: transparent; border: 0; border-top: 1px solid #edf0f1; }
+    .carrier-field small, .carrier-field b { display: block; }
+    .carrier-field small { color: #7b858a; font-size: 9px; }
+    .carrier-field b { margin-top: 2px; font-size: 11px; }
+    .carrier-field i { color: #9ca5aa; font-style: normal; }
+    .discussion-item-list { display: grid; gap: 9px; }
+    .discussion-item-list > button { display: grid; grid-template-columns: 1fr auto auto; align-items: center; gap: 8px; width: 100%; padding: 13px; text-align: left; color: #202326; background: #fff; border: 1px solid #e5e9eb; border-radius: 12px; }
+    .discussion-item-list b, .discussion-item-list small { display: block; }
+    .discussion-item-list small { margin-top: 2px; color: #778188; font-size: 9px; }
+    .discussion-item-list em { color: #168fc8; font-size: 9px; font-style: normal; }
+    .discussion-item-list i { color: #9ca5aa; font-style: normal; }
+
+    /* V2.2 refinements */
+    .item-qty { margin-left: 5px; color: #667078; font-size: 9px; font-style: normal; font-weight: 700; }
+    .quick-source-sheet { padding: 0 0 22px !important; }
+    .quick-source-sheet .floating-source-actions { padding-top: 0; }
+    .luggage-name-quantity-row { display: grid; grid-template-columns: minmax(0, 1fr) 108px; gap: 8px; }
+    .luggage-name-quantity-row label { min-width: 0; }
+    .luggage-name-quantity-row .quantity-field { align-content: center; }
+    .luggage-name-quantity-row .quantity-field > span { margin-bottom: 7px; }
+    .luggage-name-quantity-row .gooh-stepper { justify-content: flex-end; min-height: 37px; }
+    .discussion-item-list.rich { margin-top: 14px; gap: 10px; }
+    .discussion-item-list.rich > button { grid-template-columns: minmax(0, 1fr) auto auto; align-items: start; padding: 13px 12px; }
+    .discussion-item-list.rich > button > span:first-child { min-width: 0; }
+    .discussion-item-list.rich > button > strong { align-self: center; color: #60717a; font-size: 8px; white-space: nowrap; }
+    .discussion-item-title { display: flex !important; align-items: center; justify-content: space-between; gap: 8px; }
+    .discussion-item-title b { font-size: 12px; }
+    .discussion-item-title em { flex: 0 0 auto; }
+    .member-carry-state { display: flex !important; flex-wrap: wrap; gap: 4px; margin-top: 7px; }
+    .member-carry-state i { padding: 3px 5px; color: #707b81 !important; background: #f0f2f3; border-radius: 5px; font-size: 7px; }
+    .member-carry-state i.done { color: #147aa7 !important; background: #e8f7fd; }
+    .carry-progress-bar { display: block !important; height: 4px; margin-top: 8px; overflow: hidden; background: #e2e7e9; border-radius: 4px; }
+    .carry-progress-bar > i { display: block; height: 100%; background: #40b8ed; border-radius: inherit; }
+    .detail-carry-progress { margin: 11px 14px 0; padding: 12px; background: #f4f7f8; border-radius: 11px; }
+    .detail-carry-progress > span { display: flex; align-items: center; justify-content: space-between; }
+    .detail-carry-progress b, .detail-carry-progress strong { font-size: 10px; }
+    .detail-carry-progress > div { height: 5px; margin-top: 8px; overflow: hidden; background: #dfe6e9; border-radius: 5px; }
+    .detail-carry-progress i { display: block; height: 100%; background: #40b8ed; border-radius: inherit; }
+    .template-flat-list { display: grid; gap: 9px; margin-top: 14px; }
+    .template-flat-list .template-list-card { margin: 0; }
+    .template-origin { display: inline-block; margin-right: 6px; padding: 2px 5px; border-radius: 5px; font-size: 7px; font-style: normal; }
+    .template-origin.system { color: #526069; background: #edf0f2; }
+    .template-origin.user { color: #168fc8; background: #e8f7fd; }
+    .template-empty-add { display: block; width: calc(100% - 28px); margin: 18px 14px 0; }
+    .static-page-unit { flex-basis: 360px; }
+    .static-phone { width: 360px; height: 779px; min-height: 779px; overflow: hidden; border-radius: 38px; }
+    .static-phone .module-stage { height: 765px; min-height: 765px; overflow: hidden; }
+    .static-arrow { padding-top: 375px; }
+    .luggage-info-grid { display: grid; grid-template-columns: 1fr 1.4fr; gap: 8px; margin-bottom: 10px; }
+    .luggage-info-grid > div { padding: 12px; background: #f4f6f7; border-radius: 11px; }
+    .luggage-info-grid small, .luggage-info-grid b { display: block; }
+    .luggage-info-grid small { color: #7b858a; font-size: 9px; }
+    .luggage-info-grid b { margin-top: 3px; font-size: 11px; }
+    .discussion-info { padding: 13px; background: #e8f7fd; border-radius: 12px; }
+    .discussion-info > b { font-size: 11px; }
+    .discussion-info p { margin: 8px 0 0; color: #50616a; font-size: 10px; line-height: 1.5; }
+    .discussion-info strong { color: #202326; }
+
+    @media (max-width: 760px) {
+      .shell { padding: 14px 16px 48px; }
+      .masthead, .main-tabs { max-width: none; width: 1120px; }
+      .masthead { padding: 18px 22px; }
+      .module-demo-layout { grid-template-columns: 210px 390px 520px !important; }
+      .dynamic-page-nav { display: grid !important; overflow: visible !important; }
+    }
   </style>
 </head>
 <body>
   <main class="shell">
     <header class="masthead">
-      <div class="eyebrow">旅行 App · 产品体验诊断</div>
-      <h1>行李清单用户反馈分析</h1>
-      <p class="lead">用户最不满的不是“缺少更多清单内容”，而是两件更基础的事：无法按自己的习惯组织行李，也无法在多人计划中稳定协作。</p>
-      <div class="meta">
-        <span>数据范围：2024-12-22 至 2026-09-11</span>
-        <span>85 条独立反馈</span>
-        <span>95 条拆分问题记录</span>
-        <span>结合当前产品机制复核</span>
-      </div>
+      <h1>行李清单重构方案 V2.0</h1>
     </header>
 
-    <div class="main-tabs" role="tablist" aria-label="报告内容">
-      <button class="main-tab active" id="tab-analysis" type="button" role="tab" aria-selected="true" aria-controls="panel-analysis" data-panel="analysis">用户反馈分析</button>
-      <button class="main-tab" id="tab-structure" type="button" role="tab" aria-selected="false" aria-controls="panel-structure" data-panel="structure">功能重构</button>
+    <div class="main-tabs" role="tablist" aria-label="原型查看方式">
+      <button class="main-tab active" id="tab-structure" type="button" role="tab" aria-selected="true" aria-controls="panel-structure" data-panel="structure">动态 Demo</button>
+      <button class="main-tab" id="tab-static" type="button" role="tab" aria-selected="false" aria-controls="panel-static" data-panel="static">静态页面</button>
     </div>
 
-    <div class="main-panel" id="panel-analysis" role="tabpanel" aria-labelledby="tab-analysis">
+    <div class="main-panel" id="panel-analysis" role="tabpanel" hidden>
       <div class="panel-intro">
         <h2>用户反馈结论图</h2>
         <p>85 条独立反馈中，两个核心问题并列第一：不能按自己的习惯维护清单，以及多人计划中不能稳定共享协作。</p>
@@ -1710,33 +2362,22 @@
     </section>
     </div>
 
-    <div class="main-panel" id="panel-structure" role="tabpanel" aria-labelledby="tab-structure" hidden>
+    <div class="main-panel" id="panel-structure" role="tabpanel" aria-labelledby="tab-structure">
       <div class="panel-intro">
-        <h2>行李清单重构结构</h2>
-        <p>根据反馈结论，形成 2 个确定模块和 1 个待验证模块。公共物品的讨论、分享与携带范围由单个计划的行李清单统一承载。</p>
+        <h2>动态 Demo</h2>
       </div>
-
-      <div class="derivation">
-        <h3>用户反馈结论 → 结构决策 → 功能模块</h3>
-        <div class="derivation-grid">
-          <div class="derivation-row"><div class="derivation-cell"><b>结论 A</b>不能养成自己的清单</div><div class="derivation-arrow">→</div><div class="derivation-cell">长期常用物品与单个计划的物品分开</div><div class="derivation-arrow">→</div><div class="derivation-cell derivation-target">行李资产 + 计划清单</div></div>
-          <div class="derivation-row"><div class="derivation-cell"><b>结论 B</b>多人计划不能稳定协作</div><div class="derivation-arrow">→</div><div class="derivation-cell">公共协作与个人准备分开呈现；意见和携带范围围绕公共物品展开</div><div class="derivation-arrow">→</div><div class="derivation-cell derivation-target">单个计划的行李清单</div></div>
-          <div class="derivation-row"><div class="derivation-cell"><b>结论 C</b>模板复用会覆盖内容</div><div class="derivation-arrow">→</div><div class="derivation-cell">模板与物品库共用一个资产入口；计划内使用前查看详情并确认范围</div><div class="derivation-arrow">→</div><div class="derivation-cell derivation-target">行李资产 · 个人模板</div></div>
-          <div class="derivation-row"><div class="derivation-cell"><b>结论 D</b>长清单难看，保存曾不稳定</div><div class="derivation-arrow">→</div><div class="derivation-cell">提供清楚的查看方式；保存与同步跟随模块处理</div><div class="derivation-arrow">→</div><div class="derivation-cell derivation-target">计划清单中的查看与状态</div></div>
-        </div>
-      </div>
-
-      <div class="module-summary-grid">
-        <div class="module-summary-card"><small>模块 1 · 结论 A/B/D</small><b>单个计划的行李清单</b><span>公共行李负责协作，我的准备负责个人完整进度。</span></div>
-        <div class="module-summary-card"><small>模块 2 · 结论 A/C</small><b>行李资产</b><span>在一个页面中管理类别、个人物品库和个人行李模板。</span></div>
-      </div>
-
-      <div id="module-tabs" class="module-tabs" role="tablist" aria-label="选择功能模块"></div>
-      <div id="module-flow" class="module-flow" aria-label="模块流程"></div>
       <div class="module-demo-layout">
+        <nav id="dynamic-page-nav" class="dynamic-page-nav" aria-label="Demo 页面与状态"></nav>
         <div class="module-phone-wrap"><div class="demo-phone"><div id="module-stage" class="module-stage"></div></div></div>
         <aside id="module-logic" class="module-logic" aria-live="polite"></aside>
       </div>
+    </div>
+
+    <div class="main-panel" id="panel-static" role="tabpanel" aria-labelledby="tab-static" hidden>
+      <div class="panel-intro">
+        <h2>静态页面</h2>
+      </div>
+      <div id="static-pages" class="static-pages"></div>
     </div>
 
     <div class="main-panel" id="panel-structure-map-legacy" hidden>
@@ -1979,12 +2620,12 @@
       </div>
     </div>
 
-    <footer class="footer">分析来源：用户提供的反馈汇总表、当前行李清单落地页截图及产品现状说明。生成日期：2026-11-19。</footer>
+    <footer class="footer">Gooh 行李清单重构体验 Demo · 动态交互与静态流程页面</footer>
   </main>
   <script>
     const REPORT = {"total": 85, "issueRows": 95, "counts": {"customization": 37, "collaboration": 37, "template": 6, "fixed": 10}, "topicCounts": {"共享范围与各自勾选": 19, "准备检查提醒": 2, "图形化打包互动": 1, "模板叠加与复用": 6, "清单不可见原因不清": 18, "清单导出": 1, "清单编辑保存与共享故障": 10, "清单调整顺序": 1, "物品库与分类自定义": 37}};
     const DEMO_PAGES = [{"id": "checklist", "nav": "01 清单首页", "title": "计划行李清单", "goal": "让用户在进入页面后立刻知道还剩什么、谁负责、装在哪里，并能在公共与个人清单之间切换。", "information": ["完成进度与未完成数量", "公共/我的视图", "类别或容器分组", "负责人与共享范围"], "actions": ["勾选自己的完成状态", "筛选未完成项", "批量调整共享或负责人", "进入添加物品"], "rules": ["共享物品对成员可见，但每个人的勾选独立", "默认折叠已全部完成的分组", "共享标签只展示例外，避免每行重复"], "states": ["没有公共物品时提示创建或从模板添加", "离线操作待同步时显示明确状态"], "mockup": "\n          <div class=\"demo-status\"><span>10:30</span><span>● ● ◒</span></div>\n          <div class=\"demo-top\"><button aria-label=\"返回\">‹</button><span>在重庆的7日</span><button aria-label=\"更多\">•••</button></div>\n          <div class=\"demo-screen-title\"><small>行李清单</small><b>还有 12 件未整理</b></div>\n          <div class=\"demo-segments\"><button data-action=\"segment\" class=\"selected\">公共 18</button><button data-action=\"segment\">我的 28</button><button data-action=\"segment\">全部 46</button></div>\n          <div class=\"demo-progress\"><i style=\"width:74%\"></i></div>\n          <div class=\"demo-toolbar\"><button data-action=\"filter-incomplete\">只看未完成</button><button data-action=\"segment\">按类别⌄</button><button data-action=\"goto\" data-page=\"discussion\">讨论 3</button></div>\n          <div class=\"demo-list-group\">\n            <div class=\"demo-group-head\"><span>服装鞋袜</span><small>9/13</small></div>\n            <div class=\"demo-item\"><button class=\"check done\" data-action=\"toggle-check\" aria-label=\"切换徒步鞋状态\">✓</button><span><b>徒步鞋</b><small>你负责 · 行李箱</small></span></div>\n            <div class=\"demo-item\"><button class=\"check\" data-action=\"toggle-check\" aria-label=\"切换排汗袜状态\"></button><span><b>排汗袜 × 3</b><small>小林负责 · 公共</small></span><em>共享</em></div>\n            <div class=\"demo-item\"><button class=\"check\" data-action=\"toggle-check\" aria-label=\"切换冲锋衣状态\"></button><span><b>冲锋衣</b><small>未分配 · 背包</small></span><em>共享</em></div>\n          </div>\n          <button class=\"demo-fab\" data-action=\"goto\" data-page=\"item\">＋ 添加物品</button>"}, {"id": "item", "nav": "02 新建/编辑物品", "title": "新建与编辑物品", "goal": "用同一页面完成创建和后续编辑，避免共享、分类等属性只能在创建时设定。", "information": ["名称与数量", "类别", "装入容器", "可见范围", "负责人", "是否保存到通用物品库"], "actions": ["新建或修改物品", "移动类别/容器", "创建后补共享", "保存为常用物品"], "rules": ["计划内修改默认只影响本次旅行", "保存到物品库需要用户明确选择", "从私有改为公共时提示成员可见范围"], "states": ["同名物品提醒，但允许保留不同数量或负责人", "删除前说明只删本计划还是同时处理模板/物品库"], "mockup": "\n          <div class=\"demo-status\"><span>10:30</span><span>● ● ◒</span></div>\n          <div class=\"demo-top\"><button data-action=\"goto\" data-page=\"checklist\" aria-label=\"关闭\">×</button><span>编辑物品</span><button class=\"text-action\" data-action=\"save-item\">保存</button></div>\n          <div class=\"demo-form\">\n            <label>物品名称<div class=\"demo-input\" contenteditable=\"true\">排汗袜</div></label>\n            <div class=\"demo-form-row\"><label>数量<div class=\"demo-stepper\"><button data-action=\"step\" data-delta=\"-1\">−</button><b data-count>3</b><button data-action=\"step\" data-delta=\"1\">＋</button></div></label><label>单位<div class=\"demo-input\">双⌄</div></label></div>\n            <label>类别<div class=\"demo-input\">服装鞋袜⌄</div></label>\n            <label>装在哪里<div class=\"demo-input\">行李箱⌄</div></label>\n            <label>谁可以看到<div class=\"demo-segments\"><button data-action=\"segment\">仅自己</button><button data-action=\"segment\" class=\"selected\">计划成员</button></div></label>\n            <label>谁负责<div class=\"demo-input\">小林⌄</div></label>\n            <label class=\"demo-switch-row\"><span><b>保存到我的物品库</b><small>以后可直接选择</small></span><button class=\"demo-switch on\" data-action=\"switch\" aria-label=\"保存到物品库\"></button></label>\n          </div>\n          <button class=\"demo-danger\" data-action=\"notify\" data-message=\"已打开删除确认\">删除本次旅行中的物品</button>"}, {"id": "discussion", "nav": "03 行李讨论与分配", "title": "群聊中的行李讨论与认领", "goal": "把“谁来带”放进同行人的讨论过程里。成员可以先提议、补充信息，再认领或由创建者分配，而不是在独立设置页里静默改字段。", "information": ["聊天上下文", "引用的行李物品", "当前负责人", "参与讨论的成员", "任务状态"], "actions": ["把物品卡片发到群聊", "回复、@成员", "自己认领", "分配给同行人", "从讨论回到清单"], "rules": ["认领或分配会生成群聊事件，所有成员都能看到", "负责人变化不改变共享范围", "每个人仍维护自己的整理状态"], "states": ["成员拒绝或取消认领时保留讨论记录", "无人回应的物品回到未分配列表"], "mockup": "\n          <div class=\"demo-status\"><span>10:30</span><span>● ● ◒</span></div>\n          <div class=\"demo-top\"><button data-action=\"goto\" data-page=\"checklist\" aria-label=\"返回\">‹</button><span>行李讨论</span><button aria-label=\"成员\">3人</button></div>\n          <div class=\"demo-chat\" data-chat-log>\n            <div class=\"chat-time\">今天 10:18</div>\n            <div class=\"chat-message other\"><i>林</i><div><b>小林</b><p>徒步那天可能下雨，冲锋衣谁来带？</p></div></div>\n            <div class=\"chat-task\"><div><b>冲锋衣</b><small>户外装备 · 背包 · 还未分配</small></div><button data-action=\"claim-item\">我来带</button><button data-action=\"assign-member\">分配给小周</button></div>\n            <div class=\"chat-message mine\"><div><p>我可以带，再加一件一次性雨衣吧。</p></div></div>\n            <div class=\"chat-system\">你添加了“一次性雨衣”到公共清单</div>\n          </div>\n          <div class=\"chat-composer\"><input data-chat-input value=\"要不要再带一个防水袋？\" aria-label=\"输入讨论内容\"><button data-action=\"send-chat\">发送</button></div>"}, {"id": "library", "nav": "04 我的物品库", "title": "通用物品库", "goal": "把物品库从系统预设选择器升级为用户可长期维护、跨计划复用的个人资产。", "information": ["我的常用物品", "系统推荐物品", "所属类别", "最近使用", "是否隐藏"], "actions": ["新增、改名、删除物品", "移动到其他类别", "批量选择加入当前计划", "恢复系统默认内容"], "rules": ["我的物品与系统推荐分层保存", "删除库中物品不删除已有计划实例", "系统推荐可隐藏但可以恢复"], "states": ["空库提供从历史计划导入", "重复名称提供合并建议"], "mockup": "\n          <div class=\"demo-status\"><span>10:30</span><span>● ● ◒</span></div>\n          <div class=\"demo-top\"><button aria-label=\"返回\">‹</button><span>我的物品库</span><button class=\"text-action\" data-action=\"manage-library\">管理</button></div>\n          <div class=\"demo-search\">⌕ 搜索物品</div>\n          <div class=\"demo-segments\"><button data-action=\"segment\" class=\"selected\">我的常用</button><button data-action=\"segment\">系统推荐</button></div>\n          <div class=\"demo-category-strip\"><button data-action=\"segment\" class=\"selected\">全部</button><button data-action=\"segment\">证件</button><button data-action=\"segment\">数码</button><button data-action=\"segment\">服装</button></div>\n          <div class=\"demo-list-group\">\n            <div class=\"demo-group-head\"><span>常用物品</span><small>跨计划复用</small></div>\n            <div class=\"demo-item\"><i class=\"library-icon\">证</i><span><b>工作证</b><small>证件</small></span><button class=\"row-more\" data-action=\"notify\" data-message=\"可编辑名称、类别或删除\">•••</button></div>\n            <div class=\"demo-item\"><i class=\"library-icon\">表</i><span><b>运动手表</b><small>数码产品</small></span><button class=\"row-more\" data-action=\"notify\" data-message=\"可编辑名称、类别或删除\">•••</button></div>\n            <div class=\"demo-item\"><i class=\"library-icon\">药</i><span><b>过敏药</b><small>药品</small></span><button class=\"row-more\" data-action=\"notify\" data-message=\"可编辑名称、类别或删除\">•••</button></div>\n          </div>\n          <button class=\"demo-fab\" data-action=\"notify\" data-message=\"已打开新建常用物品\">＋ 新建常用物品</button>"}, {"id": "taxonomy", "nav": "05 物品库分类", "title": "物品库分类管理", "goal": "这里只管理“我的物品库”中的长期分类，帮助以后快速选择常用物品。它不展示本次旅行的行李数量，也不会直接改动已有计划或模板。", "information": ["分类名称", "系统分类或我的分类", "显示顺序", "是否隐藏"], "actions": ["新增分类", "改名、删除、排序", "隐藏系统分类", "为物品调整默认分类"], "rules": ["分类只作用于个人物品库", "物品加入计划或模板时复制当时的分类名称", "之后修改物品库分类不追溯更改已有计划和模板"], "states": ["删除前要求迁移该分类下的库内物品", "系统分类可隐藏和恢复，不允许永久删除"], "mockup": "\n          <div class=\"demo-status\"><span>10:30</span><span>● ● ◒</span></div>\n          <div class=\"demo-top\"><button aria-label=\"返回\">‹</button><span>物品库分类</span><button class=\"text-action\" data-action=\"notify\" data-message=\"分类顺序已保存\">完成</button></div>\n          <div class=\"demo-context\"><b>用于整理“我的物品库”</b><small>不会改变已有计划和模板中的分类</small></div>\n          <div class=\"demo-sort-list\">\n            <div><i>≡</i><span><b>证件与资金</b><small>系统分类</small></span><button data-action=\"notify\" data-message=\"系统分类可隐藏或修改显示名\">•••</button></div>\n            <div><i>≡</i><span><b>服装鞋袜</b><small>系统分类</small></span><button data-action=\"notify\" data-message=\"系统分类可隐藏或修改显示名\">•••</button></div>\n            <div><i>≡</i><span><b data-category-name>潜水设备</b><small>我的分类</small></span><button data-action=\"rename-category\">改名</button></div>\n            <div><i>≡</i><span><b>待购买</b><small>我的分类</small></span><button data-action=\"notify\" data-message=\"已打开分类操作菜单\">•••</button></div>\n          </div>\n          <button class=\"demo-fab\" data-action=\"notify\" data-message=\"已创建新的物品库分类\">＋ 新建分类</button>"}, {"id": "templates", "nav": "06 模板中心", "title": "模板中心", "goal": "让模板成为可组合的物品集合，而不是会覆盖当前清单的替换工具。", "information": ["基础模板与场景模板", "包含物品数", "最近更新", "是否共享给同行人"], "actions": ["新建空白模板", "预览和编辑模板", "复制模板", "添加到计划", "分享模板给同行人"], "rules": ["模板独立创建和维护，不依赖某个当前计划", "模板不保存成员、负责人或勾选状态", "一个计划可连续合并多个模板"], "states": ["没有模板时引导新建空白模板或复制已有模板", "模板内容失效时展示缺失项而不是静默删除"], "mockup": "\n          <div class=\"demo-status\"><span>10:30</span><span>● ● ◒</span></div>\n          <div class=\"demo-top\"><button aria-label=\"返回\">‹</button><span>行李模板</span><button class=\"text-action\" data-action=\"goto\" data-page=\"template-editor\">新建</button></div>\n          <div class=\"demo-search\">⌕ 搜索模板</div>\n          <div class=\"demo-template-card featured\"><small>基础模板</small><b>我的旅行基础清单</b><span>28 件 · 6 个分类</span><button data-action=\"goto\" data-page=\"merge\">添加到计划</button></div>\n          <div class=\"demo-template-grid\">\n            <div data-action=\"goto\" data-page=\"merge\"><small>场景补充</small><b>海边玩水</b><span>9 件</span></div>\n            <div data-action=\"goto\" data-page=\"merge\"><small>场景补充</small><b>户外徒步</b><span>12 件</span></div>\n            <div data-action=\"notify\" data-message=\"已打开模板详情\"><small>行程长度</small><b>长途旅行</b><span>7 件</span></div>\n            <div data-action=\"notify\" data-message=\"已打开模板详情\"><small>季节补充</small><b>冬季保暖</b><span>8 件</span></div>\n          </div>\n          <div class=\"demo-bottom-action\" data-action=\"goto\" data-page=\"template-editor\">＋ 新建空白模板</div>"}, {"id": "merge", "nav": "07 模板合并预览", "title": "使用模板与冲突处理", "goal": "在写入计划前把新增、重复和冲突讲清楚，让默认行为可逆且不丢数据。", "information": ["新增项数量", "重复项数量", "名称或类别冲突", "应用后预计总数"], "actions": ["逐项查看差异", "跳过重复项", "选择冲突处理方式", "合并或替换"], "rules": ["默认合并，替换是次级危险操作", "同名同类别默认去重", "同名不同类别或数量要求用户确认", "完成后提供一次撤销"], "states": ["无新增内容时不允许重复应用", "冲突未处理完时不可确认"], "mockup": "\n          <div class=\"demo-status\"><span>10:30</span><span>● ● ◒</span></div>\n          <div class=\"demo-top\"><button data-action=\"goto\" data-page=\"templates\" aria-label=\"返回\">‹</button><span>添加“户外徒步”</span><span></span></div>\n          <div class=\"demo-merge-summary\"><div><b>＋ 8</b><small>新增</small></div><div><b>＝ 3</b><small>重复</small></div><div><b>！ 1</b><small>需确认</small></div></div>\n          <div class=\"demo-setting\"><span><b>自动跳过完全重复项</b><small>保留当前计划中的设置</small></span><button class=\"demo-switch on\" data-action=\"switch\" aria-label=\"跳过重复项\"></button></div>\n          <div class=\"demo-list-group compact\">\n            <div class=\"demo-group-head\"><span>需要确认</span><small>1 项</small></div>\n            <div class=\"demo-conflict\"><b>冲锋衣</b><small>计划中：服装鞋袜 ×1</small><small>模板中：户外装备 ×1</small><div class=\"demo-segments\"><button data-action=\"segment\" class=\"selected\">保留当前</button><button data-action=\"segment\">使用模板</button></div></div>\n            <div class=\"demo-group-head\"><span>将新增</span><small>8 项</small></div>\n            <div class=\"demo-item\"><button class=\"check done\" data-action=\"toggle-check\">✓</button><span><b>登山杖</b><small>户外装备</small></span></div>\n            <div class=\"demo-item\"><button class=\"check done\" data-action=\"toggle-check\">✓</button><span><b>护膝</b><small>户外装备</small></span></div>\n          </div>\n          <div class=\"demo-sticky-actions\"><button data-action=\"notify\" data-message=\"替换会删除当前内容，需要再次确认\">替换当前清单</button><button class=\"primary\" data-action=\"apply-template\">合并 8 件物品</button></div>"}, {"id": "template-editor", "nav": "08 独立模板编辑", "title": "独立创建与编辑模板", "goal": "模板在模板中心独立创建，不依赖当前计划。用户可以从空白模板开始建立分类和物品，再在任意计划中合并使用。", "information": ["模板名称和用途", "模板内分类", "模板物品与默认数量", "更新时间"], "actions": ["新建分类和物品", "拖拽排序", "删除或复制物品", "保存模板"], "rules": ["模板不包含计划成员、负责人、共享范围或勾选状态", "编辑模板不改变已经使用它的计划", "使用时才生成新的计划项"], "states": ["空模板提示先添加分类或物品", "离开未保存模板时提供保存草稿"], "mockup": "\n          <div class=\"demo-status\"><span>10:30</span><span>● ● ◒</span></div>\n          <div class=\"demo-top\"><button data-action=\"goto\" data-page=\"templates\" aria-label=\"关闭\">×</button><span>新建模板</span><button class=\"text-action\" data-action=\"save-template\">保存</button></div>\n          <div class=\"demo-form\">\n            <label>模板名称<div class=\"demo-input\" contenteditable=\"true\">城市周末基础清单</div></label>\n            <label>说明<div class=\"demo-input muted-input\" contenteditable=\"true\">适合 2–3 天的城市旅行</div></label>\n          </div>\n          <div class=\"demo-list-group template-editor-list\">\n            <div class=\"demo-group-head\"><span>证件与资金</span><button data-action=\"notify\" data-message=\"可改名、排序或删除模板内分类\">•••</button></div>\n            <div class=\"demo-item\"><i class=\"drag\">≡</i><span><b>身份证</b><small>默认 1 件</small></span><button data-action=\"notify\" data-message=\"已打开模板物品编辑\">•••</button></div>\n            <div class=\"demo-item\"><i class=\"drag\">≡</i><span><b>银行卡</b><small>默认 1 件</small></span><button data-action=\"notify\" data-message=\"已打开模板物品编辑\">•••</button></div>\n            <div class=\"demo-group-head\"><span>数码产品</span><button data-action=\"notify\" data-message=\"可改名、排序或删除模板内分类\">•••</button></div>\n            <div class=\"demo-item\"><i class=\"drag\">≡</i><span><b>充电器</b><small>默认 1 件</small></span><button data-action=\"notify\" data-message=\"已打开模板物品编辑\">•••</button></div>\n          </div>\n          <button class=\"demo-bottom-action\" data-action=\"notify\" data-message=\"已添加一个模板内物品\">＋ 添加物品或分类</button>"}];
-    const MODULE_DEMOS = [{"id": "plan-list", "name": "单个计划的行李清单", "source": "来自结论 A / B / D", "purpose": "共同行李查看协作信息；个人行李只记录当前用户自己的准备进度。", "entry": "计划详情 → 行李清单 Tab", "flow": ["查看共同行李信息", "单击物品打开操作弹窗", "查看携带成员与讨论", "从添加弹窗选择来源", "在个人行李中核对进度"], "screen_titles": {"public": "共同行李页面", "mine": "个人行李页面", "library-picker": "计划内物品库选择页", "template-picker": "计划内模板选择页", "template-picker-detail": "计划内模板详情页"}, "screen_notes": {"public": [["页面内容", "每件共同行李展示物品名称、携带成员和最新讨论摘要。"], ["完成状态", "共同行李属于共享信息，列表不提供当前用户的完成勾选。"], ["单击物品", "打开操作弹窗，可查看讨论、调整携带成员或编辑共享物品。"], ["添加入口", "计划页只保留“添加行李”；物品库和模板保持全局独立。"]], "mine": [["页面内容", "只展示当前用户需要准备的个人物品和对应完成状态。"], ["两个操作区", "点击圆形勾选切换完成状态；点击物品名称打开编辑和删除弹窗。"], ["进度", "只按个人行李的完成状态计算。"]], "library-picker": [["页面定位", "这是计划内的物品选择页，不是个人物品库管理页。"], ["操作", "点击物品右侧“＋”，弹窗确认后复制到当前计划。"], ["返回", "返回进入选择页前的共同行李或个人行李。"]], "template-picker": [["页面定位", "这是计划内的模板选择页，不是模板管理页。"], ["操作", "点击模板进入二级详情页，不在列表页勾选。"], ["返回", "返回进入选择页前的共同行李或个人行李。"]], "template-picker-detail": [["内容", "展示模板包含的分类和物品。"], ["使用模板", "底部按钮进入加入范围确认；同名物品不会重复添加。"], ["返回", "返回模板列表。"]]}, "modal_titles": {"shared-item": "共同行李操作弹窗", "shared-item-empty": "暂无讨论的共同行李弹窗", "shared-item-other": "已有讨论但我未发表的行李弹窗", "edit-shared": "编辑共同行李弹窗", "delete-shared": "删除共同行李确认弹窗", "carry-scope": "携带成员弹窗", "opinions": "共同行李讨论弹窗", "opinions-empty": "暂无讨论弹窗", "opinion-editor": "发表 / 编辑意见弹窗", "opinions-others": "已有讨论但我未发表弹窗", "edit-personal": "编辑个人行李弹窗", "edit-personal-shared": "编辑已共享个人行李弹窗", "delete-personal": "删除个人行李确认弹窗", "delete-personal-shared": "移出已共享个人行李确认弹窗", "add-source-shared": "共同行李添加来源弹窗", "add-source-personal": "个人行李添加来源弹窗", "custom-add-shared": "新增共同行李弹窗", "custom-add-personal": "新增个人行李弹窗", "confirm-library-shared": "物品库加入共同行李确认弹窗", "confirm-library-personal": "物品库加入个人行李确认弹窗", "confirm-template-shared": "模板加入共同行李确认弹窗", "confirm-template-personal": "模板加入个人行李确认弹窗", "share-opinions": "讨论汇总分享弹窗", "plan-category-picker": "计划行李类别选择弹窗"}, "modal_notes": {"shared-item": [["信息", "集中展示携带成员、讨论数量和共享编辑入口。"], ["打开方式", "单击共同行李对象。"]], "shared-item-empty": [["讨论", "没有人发表时显示“暂无讨论”，共同行李列表只展示摘要。"], ["操作", "可发表第一条意见，或编辑共享物品。"]], "shared-item-other": [["讨论", "已有其他成员意见，但当前用户尚未发表。"], ["操作", "进入讨论后可发表自己的意见。"]], "edit-shared": [["同步范围", "名称、数量、类别和备注修改后，同步到所有拥有这件共同行李的成员。", "system"], ["输入限制", "名称必填 1–20 字；数量 1–99；备注最多 100 字。"], ["删除入口", "删除进入二次确认。"]], "delete-shared": [["删除影响", "确认后从所有成员的行李清单中删除，并移除相关讨论。", "system"], ["操作", "取消返回编辑弹窗；确认后关闭全部相关弹窗。"]], "carry-scope": [["默认", "新建共同行李默认所有计划成员携带。"], ["选择", "可勾选一个或多个成员。"], ["校验", "至少选择一名成员；全部取消时保存按钮禁用。", "system"]], "opinions": [["状态", "已有讨论且我已发表。"], ["操作", "编辑、删除放在弹窗底部，不附着在个人意见卡片上。"], ["限制", "每人一条，每条 1–200 字。"]], "opinions-others": [["状态", "已有其他成员讨论，但我尚未发表。"], ["操作", "底部只显示“发表我的意见”。"], ["限制", "每人一条，每条 1–200 字。"]], "opinions-empty": [["空状态", "没有讨论时显示空白占位。"], ["操作", "可发表当前用户的第一条意见。"]], "opinion-editor": [["输入", "必填 1–200 字，实时显示字数。"], ["保存", "保存后返回讨论弹窗。"]], "edit-personal": [["打开方式", "单击未共享的个人行李名称。"], ["输入限制", "名称必填 1–20 字；数量 1–99；备注最多 100 字。"], ["共享", "默认关闭；打开并保存后进入共享确认。共享为单向操作。"]], "edit-personal-shared": [["状态", "这件物品已是共同行李，修改将同步给相关成员。", "system"], ["共享限制", "不提供关闭共享的入口。"], ["删除", "从个人行李页删除只影响当前用户，不删除其他成员的行李。"]], "delete-personal": [["删除影响", "只从当前用户的个人行李中删除。"], ["操作", "取消返回编辑弹窗；确认后关闭弹窗。"]], "delete-personal-shared": [["删除影响", "虽然这件行李已共享，但这里只会将它移出当前用户的个人行李。", "system"], ["其他成员", "其他成员的行李和共同行李信息不受影响。"]], "add-source-shared": [["来源", "选择物品库、行李模板或自定义添加。"], ["共享范围", "任何来源都必须在最终加入前确认同步给所有成员。", "system"]], "add-source-personal": [["来源", "选择物品库、行李模板或自定义添加。"], ["共享开关", "自定义新增默认是个人行李，可主动打开“设为共同行李”。"]], "custom-add-shared": [["输入限制", "名称必填 1–20 字；数量 1–99。"], ["保存", "保存前再次确认将添加到所有成员的清单。", "system"]], "custom-add-personal": [["输入限制", "名称必填 1–20 字；数量 1–99。"], ["共享开关", "默认关闭；打开后保存时进入共同行李确认。"]], "confirm-library-shared": [["确认范围", "确认后复制到当前计划，并添加到所有成员的共同行李。", "system"]], "confirm-library-personal": [["确认范围", "加入个人行李前必须确认是否共享。"], ["默认", "默认仅自己；打开共享后将同步给所有计划成员。", "system"]], "confirm-template-shared": [["校验", "先判断当前计划是否已有行李，并检查模板重复项。"], ["有行李", "选择合并（保留原清单，重复项跳过）或替换原清单。"], ["空清单", "没有行李时不显示方式选择，直接确认加入。"], ["共享范围", "新增内容将同步到所有计划成员。", "system"]], "confirm-template-personal": [["校验", "先判断个人行李是否已有内容，并检查模板重复项。"], ["有行李", "选择合并（保留原清单，重复项跳过）或替换原清单。"], ["空清单", "没有个人行李时不显示方式选择，直接确认加入。"], ["共享确认", "使用模板加入个人行李前，仍需确认新增内容是否共享。", "system"]], "plan-category-picker": [["选择", "系统类别和个人类别均可选择。"], ["结果", "选择后返回当前新增或编辑弹窗，并更新类别字段。"]], "share-opinions": [["分享范围", "汇总全部共同行李的已发表讨论。"], ["输出", "生成表格式图片，可保存或分享到群聊。"]]}, "screens": {"public": "\n              <div class=\"demo-status\"><span>10:30</span><span>● ● ◒</span></div><div class=\"demo-top\"><button>‹</button><span>在重庆的7日</span><button class=\"text-action\" data-module-action=\"open-modal\" data-modal=\"share-opinions\">分享讨论</button></div>\n              <div class=\"demo-segments plan-view-tabs\"><button class=\"selected\" data-module-action=\"screen\" data-screen=\"public\">共同行李</button><button data-module-action=\"screen\" data-screen=\"mine\">个人行李</button></div>\n              <div class=\"demo-list-group shared-list\"><div class=\"demo-group-head\"><span>出行证件</span><small>3 件</small></div>\n                <button class=\"shared-info-row\" data-module-action=\"open-modal\" data-modal=\"shared-item\"><b>护照</b><span>携带 3/3：我、小林、小周</span><small>讨论：小林建议出发前确认有效期</small></button>\n                <button class=\"shared-info-row\" data-module-action=\"open-modal\" data-modal=\"shared-item-empty\"><b>港澳通行证</b><span>携带 2/3：小林、小周</span><small>暂无讨论</small></button>\n                <button class=\"shared-info-row\" data-module-action=\"open-modal\" data-modal=\"shared-item-other\"><b>学生证</b><span>携带 1/3：小周</span><small>讨论：小周提醒周三可享门票优惠</small></button>\n              </div>\n              <div class=\"demo-list-group shared-list\"><div class=\"demo-group-head\"><span>数码产品</span><small>2 件</small></div>\n                <button class=\"shared-info-row\" data-module-action=\"open-modal\" data-modal=\"shared-item\"><b>充电器</b><span>携带 3/3：我、小林、小周</span><small>讨论：统一准备 Type-C 快充</small></button>\n                <button class=\"shared-info-row\" data-module-action=\"open-modal\" data-modal=\"shared-item-empty\"><b>移动电源</b><span>携带 2/3：我、小周</span><small>暂无讨论</small></button>\n              </div>\n              <button class=\"gooh-add-button\" data-module-action=\"open-modal\" data-modal=\"add-source-shared\">＋ 添加行李</button>", "mine": "\n              <div class=\"demo-status\"><span>10:30</span><span>● ● ◒</span></div><div class=\"demo-top\"><button>‹</button><span>在重庆的7日</span><span></span></div>\n              <div class=\"demo-segments plan-view-tabs\"><button data-module-action=\"screen\" data-screen=\"public\">共同行李</button><button class=\"selected\" data-module-action=\"screen\" data-screen=\"mine\">个人行李</button></div>\n              <div class=\"personal-progress\"><span><small>我的准备进度</small><b data-progress-label>2 / 4</b></span><div class=\"demo-progress\"><i data-progress-bar style=\"width:50%\"></i></div></div>\n              <div class=\"demo-list-group personal-list\"><div class=\"demo-group-head\"><span>个人证件</span><small>2 件</small></div>\n                <div class=\"personal-edit-row\"><button data-module-action=\"open-modal\" data-modal=\"edit-personal\"><b>身份证</b><small>数量 1</small></button><button class=\"carry-check\" data-module-action=\"personal-check\">✓</button></div>\n                <div class=\"personal-edit-row\"><button data-module-action=\"open-modal\" data-modal=\"edit-personal-shared\"><span><b>工作证</b><em>共享</em></span><small>数量 1</small></button><button class=\"carry-check off\" data-module-action=\"personal-check\"></button></div>\n                <div class=\"demo-group-head\"><span>衣物</span><small>2 件</small></div>\n                <div class=\"personal-edit-row\"><button data-module-action=\"open-modal\" data-modal=\"edit-personal-shared\"><span><b>徒步鞋</b><em>共享</em></span><small>数量 1</small></button><button class=\"carry-check\" data-module-action=\"personal-check\">✓</button></div>\n                <div class=\"personal-edit-row\"><button data-module-action=\"open-modal\" data-modal=\"edit-personal\"><b>速干衣</b><small>数量 2</small></button><button class=\"carry-check off\" data-module-action=\"personal-check\"></button></div>\n              </div>\n              <button class=\"gooh-add-button\" data-module-action=\"open-modal\" data-modal=\"add-source-personal\">＋ 添加行李</button>", "library-picker": "\n              <div class=\"demo-status\"><span>10:30</span><span>● ● ◒</span></div><div class=\"demo-top\"><button data-module-action=\"back-plan\">‹</button><span>从物品库添加</span><span></span></div>\n              <div class=\"picker-context\" data-picker-context>选择物品加入当前计划</div>\n              <div class=\"demo-list-group plan-picker-list\"><div class=\"demo-group-head\"><span>个人证件</span><small>个人物品库</small></div>\n                <div><span><b>身份证</b><small>个人证件</small></span><button data-module-action=\"toggle-plan-library\">＋</button></div>\n                <div><span><b>工作证</b><small>个人证件</small></span><button data-module-action=\"toggle-plan-library\">＋</button></div>\n                <div class=\"demo-group-head\"><span>数码产品</span><small>个人物品库</small></div>\n                <div><span><b>充电器</b><small>数码产品</small></span><button data-module-action=\"toggle-plan-library\">＋</button></div>\n              </div><div class=\"picker-selection-bar\"><span>已选择 <b data-library-selected>0</b> 件</span><button data-module-action=\"save-plan-library\" disabled>保存</button></div>", "template-picker": "\n              <div class=\"demo-status\"><span>10:30</span><span>● ● ◒</span></div><div class=\"demo-top\"><button data-module-action=\"back-plan\">‹</button><span>选择行李模板</span><span></span></div>\n              <div class=\"picker-context\" data-picker-context>点击模板查看具体清单</div>\n              <div class=\"template-choice-list\"><button data-module-action=\"screen\" data-screen=\"template-picker-detail\"><span><b>户外徒步</b><small>12 件 · 4 个类别</small></span><i>›</i></button><button data-module-action=\"screen\" data-screen=\"template-picker-detail\"><span><b>海边玩水</b><small>9 件 · 3 个类别</small></span><i>›</i></button><button data-module-action=\"screen\" data-screen=\"template-picker-detail\"><span><b>冬季保暖</b><small>8 件 · 3 个类别</small></span><i>›</i></button></div>", "template-picker-detail": "\n              <div class=\"demo-status\"><span>10:30</span><span>● ● ◒</span></div><div class=\"demo-top\"><button data-module-action=\"screen\" data-screen=\"template-picker\">‹</button><span>户外徒步</span><span></span></div>\n              <div class=\"template-detail-head\"><small>场景模板</small><b>户外徒步</b><span>12 件 · 4 个类别</span></div><div class=\"demo-list-group reference-list\"><div class=\"demo-group-head\"><span>衣物</span><small>4 件</small></div><div class=\"template-preview-row\"><b>冲锋衣</b><small>1 件</small></div><div class=\"template-preview-row\"><b>速干衣</b><small>2 件</small></div><div class=\"demo-group-head\"><span>装备</span><small>3 件</small></div><div class=\"template-preview-row\"><b>登山杖</b><small>1 件</small></div></div><button class=\"blue-primary picker-save\" data-module-action=\"use-plan-template\">使用模板</button>"}, "modals": {"shared-item": "<div class=\"demo-modal-backdrop\" data-module-action=\"close-modal\"></div><section class=\"demo-modal gooh-sheet\"><header><b>护照</b><button data-module-action=\"close-modal\">×</button></header><div class=\"carry-summary\"><b>携带情况 · 3/3</b><span>携带：我、小林、小周</span><small>未携带：无</small></div><div class=\"gooh-sheet-body\"><button class=\"gooh-setting-row\" data-module-action=\"open-modal\" data-modal=\"carry-scope\"><span><small>调整携带成员</small><b>3 人</b></span><i>›</i></button><button class=\"gooh-setting-row\" data-module-action=\"open-modal\" data-modal=\"opinions\"><span><small>讨论</small><b>2 人已发表</b></span><i>›</i></button></div><div class=\"gooh-sheet-actions\"><button data-module-action=\"open-modal\" data-modal=\"edit-shared\">编辑共享行李</button></div></section>", "shared-item-empty": "<div class=\"demo-modal-backdrop\" data-module-action=\"close-modal\"></div><section class=\"demo-modal gooh-sheet\"><header><b>港澳通行证</b><button data-module-action=\"close-modal\">×</button></header><div class=\"carry-summary\"><b>携带情况 · 2/3</b><span>携带：小林、小周</span><small>未携带：我</small></div><div class=\"gooh-sheet-body\"><button class=\"gooh-setting-row\" data-module-action=\"open-modal\" data-modal=\"carry-scope\"><span><small>调整携带成员</small><b>2 人</b></span><i>›</i></button><button class=\"gooh-setting-row\" data-module-action=\"open-modal\" data-modal=\"opinions-empty\"><span><small>讨论</small><b>暂无讨论</b></span><i>›</i></button></div><div class=\"gooh-sheet-actions\"><button data-module-action=\"open-modal\" data-modal=\"edit-shared\">编辑共享行李</button></div></section>", "shared-item-other": "<div class=\"demo-modal-backdrop\" data-module-action=\"close-modal\"></div><section class=\"demo-modal gooh-sheet\"><header><b>学生证</b><button data-module-action=\"close-modal\">×</button></header><div class=\"carry-summary\"><b>携带情况 · 1/3</b><span>携带：小周</span><small>未携带：我、小林</small></div><div class=\"gooh-sheet-body\"><button class=\"gooh-setting-row\" data-module-action=\"open-modal\" data-modal=\"carry-scope\"><span><small>调整携带成员</small><b>1 人</b></span><i>›</i></button><button class=\"gooh-setting-row\" data-module-action=\"open-modal\" data-modal=\"opinions-others\"><span><small>讨论</small><b>1 人已发表</b></span><i>›</i></button></div><div class=\"gooh-sheet-actions\"><button data-module-action=\"open-modal\" data-modal=\"edit-shared\">编辑共享行李</button></div></section>", "edit-shared": "<div class=\"demo-modal-backdrop\" data-module-action=\"close-modal\"></div><section class=\"demo-modal gooh-sheet tall\"><header><b>编辑共享行李</b><button data-module-action=\"close-modal\">×</button></header><div class=\"sync-warning\">修改后将同步到所有拥有这件行李的成员</div><div class=\"gooh-form\"><label><span>物品名称</span><input maxlength=\"20\" value=\"护照\"></label><label><span>数量</span><div class=\"gooh-stepper\"><button data-module-action=\"step\" data-delta=\"-1\">−</button><b data-count>1</b><button data-module-action=\"step\" data-delta=\"1\">＋</button></div></label><label><span>清单类别</span><button data-module-action=\"open-modal\" data-modal=\"plan-category-picker\"><b data-category-value>个人证件</b> ›</button></label><label><span>备注</span><input maxlength=\"100\" placeholder=\"选填\"></label></div><div class=\"gooh-dual-actions\"><button class=\"danger-outline\" data-module-action=\"open-modal\" data-modal=\"delete-shared\">删除</button><button class=\"blue-primary\" data-module-action=\"save-modal\">保存修改</button></div></section>", "delete-shared": "<div class=\"demo-modal-backdrop\" data-module-action=\"close-modal\"></div><section class=\"demo-modal gooh-sheet confirm-sheet\"><header><b>删除共同行李？</b><button data-module-action=\"close-modal\">×</button></header><div class=\"confirm-copy\"><b>“护照”将从所有成员的行李清单中删除</b><span>相关讨论内容也会同时删除，此操作无法撤销。</span></div><div class=\"gooh-dual-actions\"><button data-module-action=\"close-modal\">取消</button><button class=\"danger-fill\" data-module-action=\"confirm-delete-all\">确认删除</button></div></section>", "carry-scope": "<div class=\"demo-modal-backdrop\" data-module-action=\"close-modal\"></div><section class=\"demo-modal gooh-sheet tall\"><header><b>携带成员</b><button data-module-action=\"close-modal\">×</button></header><div class=\"gooh-check-list\"><label><span>我</span><input type=\"checkbox\" checked data-carry-member></label><label><span>小林</span><input type=\"checkbox\" checked data-carry-member></label><label><span>小周</span><input type=\"checkbox\" checked data-carry-member></label></div><button class=\"blue-primary full-action\" data-module-action=\"save-carry-scope\">保存</button></section>", "opinions": "<div class=\"demo-modal-backdrop\" data-module-action=\"close-modal\"></div><section class=\"demo-modal gooh-sheet tall\"><header><b>护照 · 讨论</b><button data-module-action=\"close-modal\">×</button></header><div class=\"gooh-opinions\"><article><b>小林</b><p>建议出发前再次确认护照有效期。</p></article><article class=\"mine\"><b>我的意见</b><p>我会同时准备一份复印件。</p></article></div><div class=\"gooh-dual-actions\"><button data-module-action=\"delete-opinion-modal\">删除我的意见</button><button class=\"blue-primary\" data-module-action=\"open-modal\" data-modal=\"opinion-editor\">编辑我的意见</button></div></section>", "opinions-others": "<div class=\"demo-modal-backdrop\" data-module-action=\"close-modal\"></div><section class=\"demo-modal gooh-sheet tall\"><header><b>学生证 · 讨论</b><button data-module-action=\"close-modal\">×</button></header><div class=\"gooh-opinions\"><article><b>小周</b><p>周三部分景点可以使用学生证享受门票优惠。</p></article></div><button class=\"blue-primary full-action\" data-module-action=\"open-modal\" data-modal=\"opinion-editor\">发表我的意见</button></section>", "opinions-empty": "<div class=\"demo-modal-backdrop\" data-module-action=\"close-modal\"></div><section class=\"demo-modal gooh-sheet tall\"><header><b>港澳通行证 · 讨论</b><button data-module-action=\"close-modal\">×</button></header><div class=\"gooh-empty\"><i>…</i><b>还没有讨论内容</b><span>你可以发表第一条意见</span></div><button class=\"blue-primary full-action\" data-module-action=\"open-modal\" data-modal=\"opinion-editor\">发表我的意见</button></section>", "opinion-editor": "<div class=\"demo-modal-backdrop\" data-module-action=\"close-modal\"></div><section class=\"demo-modal gooh-sheet tall\"><header><b>我的意见</b><button data-module-action=\"close-modal\">×</button></header><label class=\"gooh-textarea\"><textarea id=\"opinion-text\" maxlength=\"200\" data-limit-input placeholder=\"写下你的意见\"></textarea><small><span data-count-for=\"opinion-text\">0</span>/200</small></label><button class=\"blue-primary full-action\" data-module-action=\"save-opinion-modal\">保存意见</button></section>", "edit-personal": "<div class=\"demo-modal-backdrop\" data-module-action=\"close-modal\"></div><section class=\"demo-modal gooh-sheet tall\"><header><b>编辑个人行李</b><button data-module-action=\"close-modal\">×</button></header><div class=\"gooh-form\"><label><span>物品名称</span><input maxlength=\"20\" value=\"身份证\"></label><label><span>数量</span><div class=\"gooh-stepper\"><button data-module-action=\"step\" data-delta=\"-1\">−</button><b data-count>1</b><button data-module-action=\"step\" data-delta=\"1\">＋</button></div></label><label><span>清单类别</span><button data-module-action=\"open-modal\" data-modal=\"plan-category-picker\"><b data-category-value>个人证件</b> ›</button></label><label><span>备注</span><input maxlength=\"100\" placeholder=\"选填\"></label><label class=\"share-switch-row\"><span><b>设为共同行李</b><small>共享后不能在这里关闭</small></span><button class=\"demo-switch\" data-module-action=\"share-toggle\" aria-label=\"设为共同行李\"></button></label></div><div class=\"gooh-dual-actions\"><button class=\"danger-outline\" data-module-action=\"open-modal\" data-modal=\"delete-personal\">删除</button><button class=\"blue-primary\" data-module-action=\"save-edit-personal\">保存修改</button></div></section>", "edit-personal-shared": "<div class=\"demo-modal-backdrop\" data-module-action=\"close-modal\"></div><section class=\"demo-modal gooh-sheet tall\"><header><b>编辑已共享行李</b><button data-module-action=\"close-modal\">×</button></header><div class=\"sync-warning\">这件行李已共享，修改会同步给所有相关成员</div><div class=\"gooh-form\"><label><span>物品名称</span><input maxlength=\"20\" value=\"工作证\"></label><label><span>数量</span><div class=\"gooh-stepper\"><button data-module-action=\"step\" data-delta=\"-1\">−</button><b data-count>1</b><button data-module-action=\"step\" data-delta=\"1\">＋</button></div></label><label><span>清单类别</span><button data-module-action=\"open-modal\" data-modal=\"plan-category-picker\"><b data-category-value>个人证件</b> ›</button></label></div><div class=\"gooh-dual-actions\"><button class=\"danger-outline\" data-module-action=\"open-modal\" data-modal=\"delete-personal-shared\">删除</button><button class=\"blue-primary\" data-module-action=\"save-modal\">保存修改</button></div></section>", "delete-personal": "<div class=\"demo-modal-backdrop\" data-module-action=\"close-modal\"></div><section class=\"demo-modal gooh-sheet confirm-sheet\"><header><b>删除个人行李？</b><button data-module-action=\"close-modal\">×</button></header><div class=\"confirm-copy\"><b>确认删除“身份证”？</b><span>只会从你的个人行李中删除。</span></div><div class=\"gooh-dual-actions\"><button data-module-action=\"close-modal\">取消</button><button class=\"danger-fill\" data-module-action=\"confirm-delete-personal\">确认删除</button></div></section>", "delete-personal-shared": "<div class=\"demo-modal-backdrop\" data-module-action=\"close-modal\"></div><section class=\"demo-modal gooh-sheet confirm-sheet\"><header><b>移出个人行李？</b><button data-module-action=\"close-modal\">×</button></header><div class=\"confirm-copy\"><b>“工作证”虽然是共享行李</b><span>本次操作仅将它从你的个人行李中移出，不会影响其他成员的行李。</span></div><div class=\"gooh-dual-actions\"><button data-module-action=\"close-modal\">取消</button><button class=\"danger-fill\" data-module-action=\"confirm-delete-personal\">确认移出</button></div></section>", "add-source-shared": "<div class=\"demo-modal-backdrop\" data-module-action=\"close-modal\"></div><section class=\"demo-modal gooh-sheet\"><header><b>添加共同行李</b><button data-module-action=\"close-modal\">×</button></header><div class=\"sync-warning\">新增内容将在确认后添加到所有成员的行李清单</div><div class=\"gooh-source-grid\"><button data-module-action=\"open-plan-picker\" data-screen=\"library-picker\"><i>▣</i><b>个人物品库</b><span>选择常用物品</span></button><button data-module-action=\"open-plan-picker\" data-screen=\"template-picker\"><i>▤</i><b>行李模板</b><span>选择场景组合</span></button><button data-module-action=\"open-modal\" data-modal=\"custom-add-shared\"><i>＋</i><b>自定义添加</b><span>新建一个物品</span></button></div></section>", "add-source-personal": "<div class=\"demo-modal-backdrop\" data-module-action=\"close-modal\"></div><section class=\"demo-modal gooh-sheet\"><header><b>添加个人行李</b><button data-module-action=\"close-modal\">×</button></header><div class=\"gooh-source-grid\"><button data-module-action=\"open-plan-picker\" data-screen=\"library-picker\"><i>▣</i><b>个人物品库</b><span>选择常用物品</span></button><button data-module-action=\"open-plan-picker\" data-screen=\"template-picker\"><i>▤</i><b>行李模板</b><span>选择场景组合</span></button><button data-module-action=\"open-modal\" data-modal=\"custom-add-personal\"><i>＋</i><b>自定义添加</b><span>新建一个物品</span></button></div></section>", "custom-add-shared": "<div class=\"demo-modal-backdrop\" data-module-action=\"close-modal\"></div><section class=\"demo-modal gooh-sheet tall\"><header><b>新增共同行李</b><button data-module-action=\"close-modal\">×</button></header><div class=\"sync-warning\">保存前将再次确认添加到所有成员</div><div class=\"gooh-form\"><label><span>物品名称</span><input maxlength=\"20\" placeholder=\"请输入添加的物品名称\"></label><label><span>数量</span><div class=\"gooh-stepper\"><button data-module-action=\"step\" data-delta=\"-1\">−</button><b data-count>1</b><button data-module-action=\"step\" data-delta=\"1\">＋</button></div></label><label><span>清单类别</span><button data-module-action=\"open-modal\" data-modal=\"plan-category-picker\"><b data-category-value>其他</b> ›</button></label></div><button class=\"blue-primary full-action\" data-module-action=\"open-modal\" data-modal=\"confirm-library-shared\">保存</button></section>", "custom-add-personal": "<div class=\"demo-modal-backdrop\" data-module-action=\"close-modal\"></div><section class=\"demo-modal gooh-sheet tall\"><header><b>新增个人行李</b><button data-module-action=\"close-modal\">×</button></header><div class=\"gooh-form\"><label><span>物品名称</span><input maxlength=\"20\" placeholder=\"请输入添加的物品名称\"></label><label><span>数量</span><div class=\"gooh-stepper\"><button data-module-action=\"step\" data-delta=\"-1\">−</button><b data-count>1</b><button data-module-action=\"step\" data-delta=\"1\">＋</button></div></label><label><span>清单类别</span><button data-module-action=\"open-modal\" data-modal=\"plan-category-picker\"><b data-category-value>其他</b> ›</button></label><label class=\"share-switch-row\"><span><b>设为共同行李</b><small>打开后将同步到所有成员</small></span><button class=\"demo-switch\" data-module-action=\"share-toggle\" aria-label=\"设为共同行李\"></button></label></div><button class=\"blue-primary full-action\" data-module-action=\"save-personal-custom\">保存</button></section>", "confirm-library-shared": "<div class=\"demo-modal-backdrop\" data-module-action=\"close-modal\"></div><section class=\"demo-modal gooh-sheet confirm-sheet\"><header><b>加入共同行李？</b><button data-module-action=\"close-modal\">×</button></header><div class=\"confirm-copy\"><b>这件物品将添加到所有成员的行李清单</b><span>确认后作为共同行李展示，所有成员都能看到。</span></div><div class=\"gooh-dual-actions\"><button data-module-action=\"close-modal\">取消</button><button class=\"blue-primary\" data-module-action=\"confirm-plan-add\">确认添加</button></div></section>", "confirm-library-personal": "<div class=\"demo-modal-backdrop\" data-module-action=\"close-modal\"></div><section class=\"demo-modal gooh-sheet confirm-sheet\"><header><b>加入个人行李？</b><button data-module-action=\"close-modal\">×</button></header><div class=\"confirm-copy\"><b>确认加入你的个人行李</b><span data-share-confirm-copy>仅计入你的准备进度，不同步给其他成员。</span></div><div class=\"gooh-form share-confirm-form\"><label class=\"share-switch-row\"><span><b>同时设为共享行李</b><small>打开后同步给所有计划成员</small></span><button class=\"demo-switch\" data-module-action=\"share-toggle\" data-confirm-share aria-label=\"同时设为共享行李\"></button></label></div><div class=\"gooh-dual-actions\"><button data-module-action=\"close-modal\">取消</button><button class=\"blue-primary\" data-module-action=\"confirm-plan-add\">确认添加</button></div></section>", "confirm-template-shared": "<div class=\"demo-modal-backdrop\" data-module-action=\"close-modal\"></div><section class=\"demo-modal gooh-sheet tall\"><header><b>确认使用模板</b><button data-module-action=\"close-modal\">×</button></header><div class=\"sync-warning\">新增行李将同步到所有计划成员</div><div class=\"demo-segments validation-state\"><button class=\"selected\" data-module-action=\"template-plan-state\" data-plan-state=\"existing\">已有行李</button><button data-module-action=\"template-plan-state\" data-plan-state=\"empty\">暂无行李</button></div><div class=\"template-validation\"><b>校验结果</b><span data-template-detection>当前已有 5 件行李 · 2 件与模板重复</span><small data-template-result>模板共 12 件，合并后新增 10 件。</small></div><div class=\"gooh-form\" data-apply-options><label class=\"template-mode-field\"><span>添加方式</span><div class=\"demo-segments\"><button class=\"selected\" data-module-action=\"apply-mode\" data-mode=\"merge\">合并</button><button data-module-action=\"apply-mode\" data-mode=\"replace\">替换原清单</button></div><small data-mode-hint>保留现有行李，重复项不会再次添加</small></label></div><button class=\"blue-primary full-action\" data-module-action=\"confirm-plan-add\" data-confirm-template>确认合并</button></section>", "confirm-template-personal": "<div class=\"demo-modal-backdrop\" data-module-action=\"close-modal\"></div><section class=\"demo-modal gooh-sheet tall\"><header><b>确认使用模板</b><button data-module-action=\"close-modal\">×</button></header><div class=\"demo-segments validation-state\"><button class=\"selected\" data-module-action=\"template-plan-state\" data-plan-state=\"existing\">已有行李</button><button data-module-action=\"template-plan-state\" data-plan-state=\"empty\">暂无行李</button></div><div class=\"template-validation\"><b>校验结果</b><span data-template-detection>当前已有 4 件个人行李 · 1 件与模板重复</span><small data-template-result>模板共 12 件，合并后新增 11 件。</small></div><div class=\"gooh-form\" data-apply-options><label class=\"template-mode-field\"><span>添加方式</span><div class=\"demo-segments\"><button class=\"selected\" data-module-action=\"apply-mode\" data-mode=\"merge\">合并</button><button data-module-action=\"apply-mode\" data-mode=\"replace\">替换原清单</button></div><small data-mode-hint>保留现有行李，重复项不会再次添加</small></label></div><div class=\"gooh-form share-confirm-form\"><label class=\"share-switch-row\"><span><b>新增内容设为共享行李</b><small data-share-confirm-copy>默认仅加入你的个人行李</small></span><button class=\"demo-switch\" data-module-action=\"share-toggle\" data-confirm-share aria-label=\"新增内容设为共享行李\"></button></label></div><button class=\"blue-primary full-action\" data-module-action=\"confirm-plan-add\" data-confirm-template>确认合并</button></section>", "plan-category-picker": "<div class=\"demo-modal-backdrop\" data-module-action=\"close-modal\"></div><section class=\"demo-modal gooh-sheet tall\"><header><b>选择清单类别</b><button data-module-action=\"close-modal\">×</button></header><div class=\"gooh-check-list category-picker-list\"><button data-module-action=\"choose-asset-category\" data-category=\"证件\"><span>证件</span><i>系统类别</i></button><button data-module-action=\"choose-asset-category\" data-category=\"数码产品\"><span>数码产品</span><i>系统类别</i></button><button data-module-action=\"choose-asset-category\" data-category=\"潜水装备\"><span>潜水装备</span><i>个人类别</i></button><button data-module-action=\"choose-asset-category\" data-category=\"其他\"><span>其他</span><i>系统类别</i></button></div></section>", "share-opinions": "<div class=\"demo-modal-backdrop\" data-module-action=\"close-modal\"></div><section class=\"demo-modal gooh-sheet tall\"><header><b>分享公共行李讨论</b><button data-module-action=\"close-modal\">×</button></header><div class=\"module-share-image discussion-report\"><small>在重庆的7日</small><b>共同行李讨论汇总</b><div><span>护照</span><p>2 人发表</p></div><div><span>充电器</span><p>1 人发表</p></div></div><div class=\"gooh-dual-actions\"><button data-module-action=\"notify\" data-message=\"图片已保存\">保存图片</button><button class=\"blue-primary\" data-module-action=\"notify\" data-message=\"已分享到群聊\">分享到群聊</button></div></section>"}}, {"id": "item-library", "name": "行李资产", "source": "来自结论 A", "purpose": "在一个全局页面中维护个人物品、分类和个人行李模板。", "entry": "我的 → 旅行工具 → 行李资产", "flow": ["进入行李资产", "切换物品库 / 类别 / 模板", "维护长期内容", "查看模板详情", "在计划添加时复制使用"], "screen_titles": {"main": "行李资产 · 物品库", "categories": "行李资产 · 类别管理", "templates": "行李资产 · 个人模板", "template-detail": "个人模板详情", "template-empty": "新模板空状态"}, "screen_notes": {"main": [["物品库", "维护跨计划复用的个人物品；系统推荐只在新增流程中出现。"], ["页面关系", "类别和个人模板通过同页顶部切换，不再分散到独立模块。"]], "categories": [["类别", "独立管理物品库和模板使用的长期分类。"], ["操作", "支持新增、改名、排序和删除；有内容的类别删除前必须迁移。", "system"]], "templates": [["个人模板", "维护可反复使用的场景清单；这里只管理，不应用到计划。"], ["操作", "点击模板进入详情。"]], "template-detail": [["内容", "查看并编辑模板内物品。"], ["使用边界", "计划内使用模板由计划清单中的模板选择页承接。", "system"]], "template-empty": [["创建结果", "确认模板名称后进入空模板管理页。"], ["下一步", "点击“添加行李”选择来源，模板不会自动带入内容。"]]}, "modal_titles": {"library-item": "编辑个人物品弹窗", "library-add": "新增物品方式弹窗", "system-picker": "系统推荐选择弹窗", "new-library-item": "自定义个人物品弹窗", "category-manager": "类别管理弹窗", "template-item": "模板物品编辑弹窗", "template-add": "模板添加物品弹窗", "asset-category-picker": "个人物品类别选择弹窗", "new-category": "新建个人类别弹窗", "category-action": "编辑个人类别弹窗", "delete-category": "删除个人类别确认弹窗", "category-sort": "类别排序弹窗", "new-template": "新建个人模板弹窗", "template-name": "编辑模板名称弹窗", "template-delete": "删除个人模板确认弹窗", "template-item-delete": "删除模板物品确认弹窗", "template-add-library": "从个人物品库添加到模板", "template-add-system": "从系统推荐添加到模板", "template-add-custom": "自定义模板物品弹窗"}, "modal_notes": {"library-item": [["输入", "名称 1–20 字；备注最多 100 字。"], ["删除", "只影响个人物品库，不影响已经复制到计划中的物品。", "system"]], "library-add": [["添加方式", "自定义和系统推荐是个人物品库新增流程中的两个来源。"]], "system-picker": [["操作", "点击“＋”选择推荐物品，底部显示已选数量。"], ["保存", "点击保存后，所选内容才加入个人物品库。", "system"]], "new-library-item": [["输入", "名称必填 1–20 字；完全同名时阻止保存。"], ["类别", "默认为未分类。"]], "category-manager": [["操作", "新增、改名、排序和删除个人类别。"], ["删除", "类别内有物品时必须迁移。", "system"]], "template-item": [["编辑", "可修改名称、数量和类别。"], ["删除", "删除只影响当前模板，并进入二次确认。", "system"]], "template-add": [["来源", "支持个人物品库、系统推荐和自定义添加。"], ["后续操作", "三个入口均可继续操作，不会停留在不可点击的来源弹窗。"]], "asset-category-picker": [["范围", "只显示可用类别；系统类别与个人类别都可用于物品归类。"], ["结果", "选择后返回新增或编辑弹窗。"]], "new-category": [["输入", "名称必填 1–10 字；与现有类别完全重名时阻止保存。"]], "category-action": [["适用范围", "仅个人类别支持改名和删除。"], ["系统类别", "系统类别不提供操作入口。", "system"]], "delete-category": [["校验", "类别内有物品时需先迁移；Demo 中删除空类别。", "system"]], "category-sort": [["操作", "系统类别、个人类别和未分类均可调整显示顺序。"], ["编辑限制", "排序不改变类别归属；系统类别仍不能改名或删除。", "system"], ["保存", "保存后更新物品库与模板中的类别选择顺序。"]], "new-template": [["第一步", "先输入模板名称，1–20 字且不可重名。"], ["下一步", "确认后进入空模板管理页。"]], "template-name": [["输入", "名称必填 1–20 字；与其他个人模板重名时阻止保存。"]], "template-delete": [["删除影响", "删除整个个人模板，不影响已经加入计划的行李。", "system"], ["操作", "删除后返回个人模板列表；此操作不可撤销。"]], "template-item-delete": [["影响", "只从当前模板删除，不影响个人物品库和已创建的计划。", "system"]], "template-add-library": [["操作", "点击“＋”加入当前模板，已加入显示勾选。"]], "template-add-system": [["操作", "点击“＋”选择系统推荐物品，再点击底部保存。"], ["关系", "保存后加入当前模板，不会自动加入个人物品库。", "system"]], "template-add-custom": [["输入", "名称 1–20 字、数量 1–99，并选择类别。"]]}, "screens": {"main": "<div class=\"demo-status\"><span>10:30</span><span>● ● ◒</span></div><div class=\"demo-top\"><button data-module-action=\"open-module\" data-module=\"plan-list\">‹</button><span>行李资产</span><span></span></div><div class=\"demo-segments asset-tabs\"><button class=\"selected\" data-module-action=\"screen\" data-screen=\"main\">物品库</button><button data-module-action=\"screen\" data-screen=\"categories\">类别</button><button data-module-action=\"screen\" data-screen=\"templates\">个人模板</button></div><div class=\"demo-list-group reference-list\"><div class=\"demo-group-head\"><span>个人证件</span><small>我的类别</small></div><button class=\"reference-row\" data-module-action=\"open-modal\" data-modal=\"library-item\"><span><b>身份证</b><small>个人物品</small></span><i>›</i></button><button class=\"reference-row\" data-module-action=\"open-modal\" data-modal=\"library-item\"><span><b>工作证</b><small>个人物品</small></span><i>›</i></button><div class=\"demo-group-head\"><span>数码产品</span><small>我的类别</small></div><button class=\"reference-row\" data-module-action=\"open-modal\" data-modal=\"library-item\"><span><b>充电器</b><small>个人物品</small></span><i>›</i></button></div><button class=\"gooh-add-button\" data-module-action=\"open-modal\" data-modal=\"library-add\">＋ 新增物品</button>", "categories": "<div class=\"demo-status\"><span>10:30</span><span>● ● ◒</span></div><div class=\"demo-top\"><button data-module-action=\"open-module\" data-module=\"plan-list\">‹</button><span>行李资产</span><button class=\"text-action\" data-module-action=\"open-modal\" data-modal=\"category-sort\">排序</button></div><div class=\"demo-segments asset-tabs\"><button data-module-action=\"screen\" data-screen=\"main\">物品库</button><button class=\"selected\" data-module-action=\"screen\" data-screen=\"categories\">类别</button><button data-module-action=\"screen\" data-screen=\"templates\">个人模板</button></div><div class=\"category-manage-list asset-category-list\"><div class=\"system-category\"><i>◆</i><b>证件</b><span>系统类别</span><button disabled>锁定</button></div><div class=\"system-category\"><i>◆</i><b>数码产品</b><span>系统类别</span><button disabled>锁定</button></div><div><i>≡</i><b>潜水装备</b><span>个人类别</span><button data-module-action=\"open-modal\" data-modal=\"category-action\">•••</button></div><div><i>≡</i><b>摄影器材</b><span>个人类别</span><button data-module-action=\"open-modal\" data-modal=\"category-action\">•••</button></div><div class=\"system-category\"><i>◆</i><b>未分类</b><span>系统类别</span><button disabled>锁定</button></div></div><button class=\"gooh-add-button\" data-module-action=\"open-modal\" data-modal=\"new-category\">＋ 新建类别</button>", "templates": "<div class=\"demo-status\"><span>10:30</span><span>● ● ◒</span></div><div class=\"demo-top\"><button data-module-action=\"open-module\" data-module=\"plan-list\">‹</button><span>行李资产</span><span></span></div><div class=\"demo-segments asset-tabs\"><button data-module-action=\"screen\" data-screen=\"main\">物品库</button><button data-module-action=\"screen\" data-screen=\"categories\">类别</button><button class=\"selected\" data-module-action=\"screen\" data-screen=\"templates\">个人模板</button></div><div class=\"template-list-card\"><button class=\"template-main full\" data-module-action=\"screen\" data-screen=\"template-detail\"><small>个人模板 · 12 件</small><b>户外徒步</b><span>衣物、装备、药品等 4 类</span></button></div><div class=\"template-list-card\"><button class=\"template-main full\" data-module-action=\"screen\" data-screen=\"template-detail\"><small>个人模板 · 9 件</small><b>海边玩水</b><span>衣物、护理、装备等 3 类</span></button></div><button class=\"gooh-add-button\" data-module-action=\"open-modal\" data-modal=\"new-template\">＋ 新建模板</button>", "template-detail": "<div class=\"demo-status\"><span>10:30</span><span>● ● ◒</span></div><div class=\"demo-top\"><button data-module-action=\"screen\" data-screen=\"templates\">‹</button><span>户外徒步</span><button class=\"text-action\" data-module-action=\"open-modal\" data-modal=\"template-name\">编辑名称</button></div><div class=\"template-detail-head\"><small>个人模板</small><b>户外徒步</b><span>12 件 · 4 个类别</span></div><div class=\"demo-list-group reference-list\"><div class=\"demo-group-head\"><span>衣物</span><small>4 件</small></div><button class=\"reference-row\" data-module-action=\"open-modal\" data-modal=\"template-item\"><span><b>冲锋衣</b><small>1 件</small></span><i>›</i></button><button class=\"reference-row\" data-module-action=\"open-modal\" data-modal=\"template-item\"><span><b>速干衣</b><small>2 件</small></span><i>›</i></button></div><div class=\"template-detail-actions\"><button class=\"danger-outline\" data-module-action=\"open-modal\" data-modal=\"template-delete\">删除模板</button><button class=\"blue-primary\" data-module-action=\"open-modal\" data-modal=\"template-add\">＋ 添加物品</button></div>", "template-empty": "<div class=\"demo-status\"><span>10:30</span><span>● ● ◒</span></div><div class=\"demo-top\"><button data-module-action=\"screen\" data-screen=\"templates\">‹</button><span>露营清单</span><button class=\"text-action\" data-module-action=\"open-modal\" data-modal=\"template-name\">编辑名称</button></div><div class=\"gooh-empty asset-empty\"><i>＋</i><b>模板中还没有行李</b><span>添加常用物品、系统推荐或自定义物品</span></div><div class=\"template-detail-actions\"><button class=\"danger-outline\" data-module-action=\"open-modal\" data-modal=\"template-delete\">删除模板</button><button class=\"blue-primary\" data-module-action=\"open-modal\" data-modal=\"template-add\">＋ 添加行李</button></div>"}, "modals": {"library-item": "<div class=\"demo-modal-backdrop\" data-module-action=\"close-modal\"></div><section class=\"demo-modal gooh-sheet tall\"><header><b>编辑个人物品</b><button data-module-action=\"close-modal\">×</button></header><div class=\"gooh-form\"><label><span>物品名称</span><input maxlength=\"20\" value=\"身份证\"></label><label><span>所属类别</span><button data-module-action=\"open-modal\" data-modal=\"asset-category-picker\"><b data-category-value>证件</b> ›</button></label><label><span>备注</span><input maxlength=\"100\" placeholder=\"选填\"></label></div><div class=\"gooh-dual-actions\"><button class=\"danger-outline\" data-module-action=\"save-modal\">删除</button><button class=\"blue-primary\" data-module-action=\"save-modal\">保存修改</button></div></section>", "library-add": "<div class=\"demo-modal-backdrop\" data-module-action=\"close-modal\"></div><section class=\"demo-modal gooh-sheet\"><header><b>新增到个人物品库</b><button data-module-action=\"close-modal\">×</button></header><div class=\"gooh-source-grid two\"><button data-module-action=\"open-modal\" data-modal=\"new-library-item\"><i>＋</i><b>自定义物品</b><span>输入名称和类别</span></button><button data-module-action=\"open-modal\" data-modal=\"system-picker\"><i>☆</i><b>系统推荐</b><span>选择常用物品</span></button></div></section>", "system-picker": "<div class=\"demo-modal-backdrop\" data-module-action=\"close-modal\"></div><section class=\"demo-modal gooh-sheet tall\"><header><b>从系统推荐添加</b><button data-module-action=\"close-modal\">×</button></header><div class=\"system-picker-list\"><div><b>防晒霜</b><button data-module-action=\"direct-add\"><i class=\"plus-mark\">＋</i></button></div><div><b>折叠收纳袋</b><button data-module-action=\"direct-add\"><i class=\"plus-mark\">＋</i></button></div><div><b>充电器</b><button disabled><i class=\"carry-check\">✓</i></button></div></div><div class=\"picker-selection-bar modal-selection-bar\"><span>已选择 <b data-recommended-selected>0</b> 件</span><button data-module-action=\"save-recommended\" disabled>保存</button></div></section>", "new-library-item": "<div class=\"demo-modal-backdrop\" data-module-action=\"close-modal\"></div><section class=\"demo-modal gooh-sheet tall\"><header><b>自定义个人物品</b><button data-module-action=\"close-modal\">×</button></header><div class=\"gooh-form\"><label><span>物品名称</span><input maxlength=\"20\" placeholder=\"输入物品名称\"></label><label><span>所属类别</span><button data-module-action=\"open-modal\" data-modal=\"asset-category-picker\"><b data-category-value>未分类</b> ›</button></label></div><button class=\"blue-primary full-action\" data-module-action=\"save-modal\">保存到个人物品库</button></section>", "category-manager": "<div class=\"demo-modal-backdrop\" data-module-action=\"close-modal\"></div><section class=\"demo-modal gooh-sheet tall\"><header><b>个人类别管理</b><button data-module-action=\"close-modal\">×</button></header><div class=\"category-manage-list\"><div><i>≡</i><b>个人证件</b><span>我的类别</span><button>•••</button></div><div><i>≡</i><b>数码产品</b><span>我的类别</span><button>•••</button></div><div><i>≡</i><b>未分类</b><span>默认类别</span><button disabled>•••</button></div></div><button class=\"blue-primary full-action\">＋ 新建类别</button></section>", "template-item": "<div class=\"demo-modal-backdrop\" data-module-action=\"close-modal\"></div><section class=\"demo-modal gooh-sheet tall\"><header><b>编辑模板物品</b><button data-module-action=\"close-modal\">×</button></header><div class=\"gooh-form\"><label><span>物品名称</span><input maxlength=\"20\" value=\"冲锋衣\"></label><label><span>数量</span><div class=\"gooh-stepper\"><button data-module-action=\"step\" data-delta=\"-1\">−</button><b data-count>1</b><button data-module-action=\"step\" data-delta=\"1\">＋</button></div></label><label><span>类别</span><button data-module-action=\"open-modal\" data-modal=\"asset-category-picker\"><b data-category-value>衣物</b> ›</button></label></div><div class=\"gooh-dual-actions\"><button class=\"danger-outline\" data-module-action=\"open-modal\" data-modal=\"template-item-delete\">删除物品</button><button class=\"blue-primary\" data-module-action=\"save-modal\">保存修改</button></div></section>", "template-add": "<div class=\"demo-modal-backdrop\" data-module-action=\"close-modal\"></div><section class=\"demo-modal gooh-sheet\"><header><b>添加模板物品</b><button data-module-action=\"close-modal\">×</button></header><div class=\"gooh-source-grid\"><button data-module-action=\"open-modal\" data-modal=\"template-add-library\"><i>▣</i><b>个人物品库</b><span>选择常用物品</span></button><button data-module-action=\"open-modal\" data-modal=\"template-add-system\"><i>☆</i><b>系统推荐</b><span>选择系统物品</span></button><button data-module-action=\"open-modal\" data-modal=\"template-add-custom\"><i>＋</i><b>自定义添加</b><span>新建模板物品</span></button></div></section>", "asset-category-picker": "<div class=\"demo-modal-backdrop\" data-module-action=\"close-modal\"></div><section class=\"demo-modal gooh-sheet tall\"><header><b>选择类别</b><button data-module-action=\"close-modal\">×</button></header><div class=\"gooh-check-list category-picker-list\"><button data-module-action=\"choose-asset-category\" data-category=\"证件\"><span>证件</span><i>系统类别</i></button><button data-module-action=\"choose-asset-category\" data-category=\"数码产品\"><span>数码产品</span><i>系统类别</i></button><button data-module-action=\"choose-asset-category\" data-category=\"潜水装备\"><span>潜水装备</span><i>个人类别</i></button><button data-module-action=\"choose-asset-category\" data-category=\"未分类\"><span>未分类</span><i>系统类别</i></button></div></section>", "new-category": "<div class=\"demo-modal-backdrop\" data-module-action=\"close-modal\"></div><section class=\"demo-modal gooh-sheet\"><header><b>新建个人类别</b><button data-module-action=\"close-modal\">×</button></header><div class=\"gooh-form\"><label><span>类别名称</span><input maxlength=\"10\" placeholder=\"1–10 个字\"></label></div><button class=\"blue-primary full-action\" data-module-action=\"save-modal\">保存类别</button></section>", "category-action": "<div class=\"demo-modal-backdrop\" data-module-action=\"close-modal\"></div><section class=\"demo-modal gooh-sheet\"><header><b>潜水装备</b><button data-module-action=\"close-modal\">×</button></header><div class=\"gooh-form\"><label><span>类别名称</span><input maxlength=\"10\" value=\"潜水装备\"></label></div><div class=\"gooh-dual-actions\"><button class=\"danger-outline\" data-module-action=\"open-modal\" data-modal=\"delete-category\">删除类别</button><button class=\"blue-primary\" data-module-action=\"save-modal\">保存名称</button></div></section>", "delete-category": "<div class=\"demo-modal-backdrop\" data-module-action=\"close-modal\"></div><section class=\"demo-modal gooh-sheet confirm-sheet\"><header><b>删除个人类别？</b><button data-module-action=\"close-modal\">×</button></header><div class=\"confirm-copy\"><b>确认删除“潜水装备”？</b><span>当前类别为空，可以直接删除；有物品时需先迁移。</span></div><div class=\"gooh-dual-actions\"><button data-module-action=\"close-modal\">取消</button><button class=\"danger-fill\" data-module-action=\"save-modal\">确认删除</button></div></section>", "category-sort": "<div class=\"demo-modal-backdrop\" data-module-action=\"close-modal\"></div><section class=\"demo-modal gooh-sheet tall\"><header><b>类别排序</b><button data-module-action=\"close-modal\">×</button></header><div class=\"sort-category-list\"><div class=\"sortable-category\"><i>≡</i><b>证件</b><span>系统类别</span><span class=\"sort-actions\"><button data-module-action=\"move-category\" data-direction=\"down\">↓</button></span></div><div class=\"sortable-category\"><i>≡</i><b>数码产品</b><span>系统类别</span><span class=\"sort-actions\"><button data-module-action=\"move-category\" data-direction=\"up\">↑</button><button data-module-action=\"move-category\" data-direction=\"down\">↓</button></span></div><div class=\"sortable-category\"><i>≡</i><b>潜水装备</b><span>个人类别</span><span class=\"sort-actions\"><button data-module-action=\"move-category\" data-direction=\"up\">↑</button><button data-module-action=\"move-category\" data-direction=\"down\">↓</button></span></div><div class=\"sortable-category\"><i>≡</i><b>摄影器材</b><span>个人类别</span><span class=\"sort-actions\"><button data-module-action=\"move-category\" data-direction=\"up\">↑</button><button data-module-action=\"move-category\" data-direction=\"down\">↓</button></span></div><div class=\"sortable-category\"><i>≡</i><b>未分类</b><span>系统类别</span><span class=\"sort-actions\"><button data-module-action=\"move-category\" data-direction=\"up\">↑</button></span></div></div><button class=\"blue-primary full-action\" data-module-action=\"save-modal\">保存顺序</button></section>", "new-template": "<div class=\"demo-modal-backdrop\" data-module-action=\"close-modal\"></div><section class=\"demo-modal gooh-sheet\"><header><b>新建个人模板</b><button data-module-action=\"close-modal\">×</button></header><div class=\"gooh-form\"><label><span>模板名称</span><input maxlength=\"20\" value=\"露营清单\"></label></div><button class=\"blue-primary full-action\" data-module-action=\"create-template\">确认并创建</button></section>", "template-name": "<div class=\"demo-modal-backdrop\" data-module-action=\"close-modal\"></div><section class=\"demo-modal gooh-sheet\"><header><b>编辑模板名称</b><button data-module-action=\"close-modal\">×</button></header><div class=\"gooh-form\"><label><span>模板名称</span><input maxlength=\"20\" value=\"户外徒步\"></label></div><button class=\"blue-primary full-action\" data-module-action=\"save-modal\">保存名称</button></section>", "template-delete": "<div class=\"demo-modal-backdrop\" data-module-action=\"close-modal\"></div><section class=\"demo-modal gooh-sheet confirm-sheet\"><header><b>删除个人模板？</b><button data-module-action=\"close-modal\">×</button></header><div class=\"confirm-copy\"><b>确认删除这个个人模板？</b><span>模板删除后无法恢复，但不会影响已经加入计划的行李。</span></div><div class=\"gooh-dual-actions\"><button data-module-action=\"close-modal\">取消</button><button class=\"danger-fill\" data-module-action=\"confirm-delete-template\">确认删除</button></div></section>", "template-item-delete": "<div class=\"demo-modal-backdrop\" data-module-action=\"close-modal\"></div><section class=\"demo-modal gooh-sheet confirm-sheet\"><header><b>删除模板物品？</b><button data-module-action=\"close-modal\">×</button></header><div class=\"confirm-copy\"><b>确认从模板删除“冲锋衣”？</b><span>不会删除个人物品库中的物品，也不影响已有计划。</span></div><div class=\"gooh-dual-actions\"><button data-module-action=\"close-modal\">取消</button><button class=\"danger-fill\" data-module-action=\"save-modal\">确认删除</button></div></section>", "template-add-library": "<div class=\"demo-modal-backdrop\" data-module-action=\"close-modal\"></div><section class=\"demo-modal gooh-sheet tall\"><header><b>从个人物品库添加</b><button data-module-action=\"close-modal\">×</button></header><div class=\"system-picker-list\"><div><b>身份证</b><button data-module-action=\"template-direct-add\"><i class=\"plus-mark\">＋</i></button></div><div><b>充电器</b><button data-module-action=\"template-direct-add\"><i class=\"plus-mark\">＋</i></button></div><div><b>冲锋衣</b><button disabled><i class=\"carry-check\">✓</i></button></div></div></section>", "template-add-system": "<div class=\"demo-modal-backdrop\" data-module-action=\"close-modal\"></div><section class=\"demo-modal gooh-sheet tall\"><header><b>从系统推荐添加</b><button data-module-action=\"close-modal\">×</button></header><div class=\"system-picker-list\"><div><b>防水袋</b><button data-module-action=\"template-direct-add\"><i class=\"plus-mark\">＋</i></button></div><div><b>急救毯</b><button data-module-action=\"template-direct-add\"><i class=\"plus-mark\">＋</i></button></div><div><b>登山杖</b><button data-module-action=\"template-direct-add\"><i class=\"plus-mark\">＋</i></button></div></div><div class=\"picker-selection-bar modal-selection-bar\"><span>已选择 <b data-recommended-selected>0</b> 件</span><button data-module-action=\"save-recommended\" disabled>保存</button></div></section>", "template-add-custom": "<div class=\"demo-modal-backdrop\" data-module-action=\"close-modal\"></div><section class=\"demo-modal gooh-sheet tall\"><header><b>自定义模板物品</b><button data-module-action=\"close-modal\">×</button></header><div class=\"gooh-form\"><label><span>物品名称</span><input maxlength=\"20\" placeholder=\"输入物品名称\"></label><label><span>数量</span><div class=\"gooh-stepper\"><button data-module-action=\"step\" data-delta=\"-1\">−</button><b data-count>1</b><button data-module-action=\"step\" data-delta=\"1\">＋</button></div></label><label><span>类别</span><button data-module-action=\"open-modal\" data-modal=\"asset-category-picker\"><b data-category-value>未分类</b> ›</button></label></div><button class=\"blue-primary full-action\" data-module-action=\"save-modal\">添加到模板</button></section>"}}];
+    const MODULE_DEMOS = [{"id": "plan-list", "name": "计划行李", "source": "来自结论 A / B / D", "purpose": "个人行李清单汇总自己的完整准备进度，并分别进入个人物品、共享物品与共享讨论。", "entry": "计划详情 → 行李清单 Tab", "flow": ["查看个人总进度", "管理个人行李", "进入共享行李管理", "进入共享讨论"], "screen_titles": {"public": "共享行李管理页面", "mine": "行李清单主页", "library-picker": "计划内物品库选择页", "template-picker": "计划内模板选择页", "template-picker-detail": "模板物品选择页", "discussion": "共享行李讨论页面", "shared-edit-list": "共享行李编辑列表页"}, "screen_notes": {"public": [["页面内容", "展示计划内全部共享物品，以及每件物品的携带人。"], ["我的状态", "仅分配给当前用户的物品显示当前用户自己的携带勾选，不展示其他成员进度。"], ["管理能力", "可新增、编辑、删除共享物品，并设置一个或多个携带人。"], ["重复判断", "共享物品按“计划 + 物品”判断；重复时关联已有记录，不覆盖携带人和状态。", "system"]], "mine": [["清单范围", "统一展示当前用户需要携带的个人行李与共享行李。"], ["数量表达", "数量紧跟物品名称显示；共享物品只保留共享标签，不展示其他携带人。"], ["携带状态", "所有勾选只维护当前用户自己的准备状态。", "system"], ["讨论入口", "多人携带进度与讨论统一在共享行李讨论页查看。"]], "library-picker": [["页面定位", "这是计划内的物品选择页，不是物品库管理页。"], ["操作", "点击物品右侧“＋”，弹窗确认后复制到当前计划。"], ["返回", "返回进入选择页前的共同行李或个人行李。"]], "template-picker": [["页面定位", "这是计划内的模板选择页，不是模板管理页。"], ["操作", "点击模板进入二级详情页，不在列表页勾选。"], ["返回", "返回进入选择页前的共同行李或个人行李。"]], "template-picker-detail": [["默认选择", "进入后默认选中模板中的全部物品，可逐项取消。"], ["保存", "底部实时显示已选数量；至少选择一件后才能保存。"], ["后续校验", "保存后检查当前清单和重复项，再确认合并或替换。", "system"]], "discussion": [["独立功能", "讨论与携带状态分开，所有计划成员都可以参与。"], ["讨论对象", "围绕共享物品交流意见和准备建议，不改变携带人或完成状态。"], ["进入方式", "从个人主页面的共享进度旁，或共享行李管理页标题栏进入。"]], "shared-edit-list": [["进入条件", "从添加共享行李的物品库或行李模板保存后进入。"], ["逐项编辑", "可修改每件物品的数量和一个或多个携带人。"], ["携带人校验", "每件共享物品至少保留一名携带人。", "system"], ["模板后续", "模板来源保存后继续校验共享列表，并选择合并或替换。"]]}, "modal_titles": {"shared-item": "共同行李操作弹窗", "shared-item-empty": "暂无讨论的共同行李弹窗", "shared-item-other": "已有讨论但我未发表的行李弹窗", "edit-shared": "编辑共同行李弹窗", "delete-shared": "删除共同行李确认弹窗", "carry-scope": "携带成员弹窗", "opinions": "共同行李讨论弹窗", "opinions-empty": "暂无讨论弹窗", "opinion-editor": "发表 / 编辑意见弹窗", "opinions-others": "已有讨论但我未发表弹窗", "edit-personal": "编辑个人行李弹窗", "edit-personal-shared": "编辑已共享个人行李弹窗", "delete-personal": "删除个人行李确认弹窗", "delete-personal-shared": "移出已共享个人行李确认弹窗", "add-source-shared": "共同行李添加来源弹窗", "add-source-personal": "个人行李添加来源弹窗", "custom-add-shared": "新增共同行李弹窗", "custom-add-personal": "新增个人行李弹窗", "confirm-library-shared": "物品库加入共同行李确认弹窗", "confirm-library-personal": "物品库加入个人行李确认弹窗", "confirm-template-shared": "模板加入共同行李确认弹窗", "confirm-template-personal": "模板加入个人行李确认弹窗", "share-opinions": "讨论汇总分享弹窗", "plan-category-picker": "计划行李类别选择弹窗", "discussion-item-info": "共享行李信息弹窗"}, "modal_notes": {"shared-item": [["信息", "集中展示携带成员、讨论数量和共享编辑入口。"], ["打开方式", "单击共同行李对象。"]], "shared-item-empty": [["讨论", "没有人发表时显示“暂无讨论”，共同行李列表只展示摘要。"], ["操作", "可发表第一条意见，或编辑共享物品。"]], "shared-item-other": [["讨论", "已有其他成员意见，但当前用户尚未发表。"], ["操作", "进入讨论后可发表自己的意见。"]], "edit-shared": [["字段", "与个人行李编辑一致，并增加携带人。"], ["携带人", "至少选择 1 人；修改不改变其他成员已有的携带状态。", "system"], ["删除", "删除共享行李会影响计划内所有成员，需要二次确认。"]], "delete-shared": [["删除影响", "确认后从所有成员的行李清单中删除，并移除相关讨论。", "system"], ["操作", "取消返回编辑弹窗；确认后关闭全部相关弹窗。"]], "carry-scope": [["默认", "新建共同行李默认所有计划成员携带。"], ["选择", "可勾选一个或多个成员。"], ["校验", "至少选择一名成员；全部取消时保存按钮禁用。", "system"]], "opinions": [["状态", "已有讨论且我已发表。"], ["操作", "编辑、删除放在弹窗底部，不附着在个人意见卡片上。"], ["限制", "每人一条，每条 1–200 字。"]], "opinions-others": [["状态", "已有其他成员讨论，但我尚未发表。"], ["操作", "底部只显示“发表我的意见”。"], ["限制", "每人一条，每条 1–200 字。"]], "opinions-empty": [["空状态", "没有讨论时显示空白占位。"], ["操作", "可发表当前用户的第一条意见。"]], "opinion-editor": [["输入", "必填 1–200 字，实时显示字数。"], ["保存", "保存后返回讨论弹窗。"]], "edit-personal": [["数据归属", "修改只影响当前用户在当前计划中的个人物品。", "system"], ["输入", "名称 1–20 字；数量 1–99。"], ["删除", "只删除个人物品，不影响同名共享物品。"]], "edit-personal-shared": [["状态", "这件物品已是共同行李，修改将同步给相关成员。", "system"], ["共享限制", "不提供关闭共享的入口。"], ["删除", "从个人行李页删除只影响当前用户，不删除其他成员的行李。"]], "delete-personal": [["删除影响", "只从当前用户的个人行李中删除。"], ["操作", "取消返回编辑弹窗；确认后关闭弹窗。"]], "delete-personal-shared": [["删除影响", "虽然这件行李已共享，但这里只会将它移出当前用户的个人行李。", "system"], ["其他成员", "其他成员的行李和共同行李信息不受影响。"]], "add-source-shared": [["二级选择", "选择物品库、行李模板或自定义添加。"], ["数据范围", "三个入口都只创建共享行李。", "system"]], "add-source-personal": [["二级选择", "选择物品库、行李模板或自定义添加。"], ["数据范围", "三个入口都只创建个人行李。", "system"]], "custom-add-shared": [["名称与数量", "名称 1–20 字；数量 1–99，在同一行完成输入。"], ["携带人", "默认选择所有计划成员，可调整但至少保留 1 人。", "system"], ["保存", "确认后创建共享行李。"]], "custom-add-personal": [["写入范围", "入口只创建个人物品，不提供共享开关。", "system"], ["重复判断", "按“计划 + 用户 + 物品”校验。"]], "confirm-library-shared": [["确认范围", "确认后复制到当前计划，并添加到所有成员的共同行李。", "system"]], "confirm-library-personal": [["写入范围", "只复制到当前用户的个人行李。", "system"], ["共享隔离", "不会新增或修改共享行李。"]], "confirm-template-shared": [["校验", "先判断当前计划是否已有行李，并检查模板重复项。"], ["有行李", "选择合并（保留原清单，重复项跳过）或替换原清单。"], ["空清单", "没有行李时不显示方式选择，直接确认加入。"], ["共享范围", "新增内容将同步到所有计划成员。", "system"]], "confirm-template-personal": [["校验", "检查个人行李是否已有内容及重复项。"], ["处理", "有内容时可合并或替换；重复项不会再次添加。"], ["数据隔离", "模板内容只写入个人行李，不影响共享行李。", "system"]], "plan-category-picker": [["选择", "系统类别和个人类别均可选择。"], ["结果", "选择后返回当前新增或编辑弹窗，并更新类别字段。"]], "share-opinions": [["分享范围", "汇总全部共同行李的已发表讨论。"], ["输出", "生成表格式图片，可保存或分享到群聊。"]], "discussion-item-info": [["信息", "展示名称、创建人、携带人和整体携带进度，不重复列出完成/未完成名单。"], ["意见", "只编辑当前用户自己的意见。"], ["编辑行李", "进入与主页一致的共享行李编辑弹窗。"]]}, "screens": {"public": "\n  <div class=\"demo-status\"><span>10:30</span><span>● ● ◒</span></div><div class=\"demo-top\"><button data-module-action=\"screen\" data-screen=\"mine\">‹</button><span>共享行李</span><button class=\"text-action\" data-module-action=\"screen\" data-screen=\"discussion\">讨论</button></div>\n  <div class=\"shared-own-progress\"><span><small>我负责携带</small><b>2 / 3 已携带</b></span><div><i style=\"width:67%\"></i></div></div>\n  <div class=\"demo-list-group shared-manage-list\"><div class=\"demo-group-head\"><span>出行证件</span><small>3 件</small></div>\n    <div class=\"shared-manage-row\"><button data-module-action=\"open-modal\" data-modal=\"shared-item\"><b>护照</b><small>携带人：我、小林、小周</small></button><button class=\"carry-check\" data-module-action=\"personal-check\" aria-label=\"切换我的携带状态\">✓</button></div>\n    <div class=\"shared-manage-row\"><button data-module-action=\"open-modal\" data-modal=\"shared-item-empty\"><b>港澳通行证</b><small>携带人：小林、小周</small></button><em>未分配给我</em></div>\n    <div class=\"shared-manage-row\"><button data-module-action=\"open-modal\" data-modal=\"shared-item-other\"><b>学生证</b><small>携带人：我</small></button><button class=\"carry-check off\" data-module-action=\"personal-check\" aria-label=\"切换我的携带状态\"></button></div>\n    <div class=\"demo-group-head\"><span>数码产品</span><small>2 件</small></div>\n    <div class=\"shared-manage-row\"><button data-module-action=\"open-modal\" data-modal=\"shared-item\"><b>充电器</b><small>携带人：我、小周</small></button><button class=\"carry-check\" data-module-action=\"personal-check\" aria-label=\"切换我的携带状态\">✓</button></div>\n    <div class=\"shared-manage-row\"><button data-module-action=\"open-modal\" data-modal=\"shared-item-empty\"><b>移动电源</b><small>携带人：小周</small></button><em>未分配给我</em></div>\n  </div>\n  <div class=\"plan-add-dock\" aria-label=\"添加共享行李\"><button class=\"plan-add-source\" data-module-action=\"open-plan-picker\" data-screen=\"library-picker\"><i>▣</i><span>物品库</span></button><button class=\"plan-add-source\" data-module-action=\"open-plan-picker\" data-screen=\"template-picker\"><i>▤</i><span>行李模板</span></button><button class=\"plan-add-primary\" data-module-action=\"open-modal\" data-modal=\"custom-add-shared\"><i>＋</i><span>添加共享行李</span></button></div>", "mine": "\n  <div class=\"demo-status\"><span>10:30</span><span>● ● ◒</span></div><div class=\"demo-top\"><button>‹</button><span>个人行李清单</span><span></span></div>\n  <section class=\"overall-progress compact\"><small>我的行李准备进度</small><div><b data-progress-label>4 / 7</b><strong>57%</strong></div><span><i data-progress-bar style=\"width:57%\"></i></span></section>\n  <button class=\"discussion-entry\" data-module-action=\"screen\" data-screen=\"discussion\"><span><b>共享行李讨论</b><small>查看多人携带进度与 4 条新意见</small></span><i>›</i></button>\n  <div class=\"demo-list-group personal-list combined-list\"><div class=\"demo-group-head\"><span>个人证件</span><small>3 件</small></div>\n    <div class=\"personal-edit-row\"><button data-module-action=\"open-modal\" data-modal=\"edit-personal\"><span><b>身份证</b><i class=\"item-qty\">x1</i></span><small>个人行李</small></button><button class=\"carry-check\" data-module-action=\"personal-check\">✓</button></div>\n    <div class=\"personal-edit-row\"><button data-module-action=\"open-modal\" data-modal=\"edit-shared\"><span><b>护照</b><i class=\"item-qty\">x1</i><em>共享</em></span><small>共享行李</small></button><button class=\"carry-check\" data-module-action=\"personal-check\">✓</button></div>\n    <div class=\"personal-edit-row\"><button data-module-action=\"open-modal\" data-modal=\"edit-personal\"><span><b>工作证</b><i class=\"item-qty\">x1</i></span><small>个人行李</small></button><button class=\"carry-check off\" data-module-action=\"personal-check\"></button></div>\n    <div class=\"demo-group-head\"><span>衣物</span><small>2 件</small></div>\n    <div class=\"personal-edit-row\"><button data-module-action=\"open-modal\" data-modal=\"edit-shared\"><span><b>徒步鞋</b><i class=\"item-qty\">x1</i><em>共享</em></span><small>共享行李</small></button><button class=\"carry-check\" data-module-action=\"personal-check\">✓</button></div>\n    <div class=\"personal-edit-row\"><button data-module-action=\"open-modal\" data-modal=\"edit-personal\"><span><b>速干衣</b><i class=\"item-qty\">x2</i></span><small>个人行李</small></button><button class=\"carry-check off\" data-module-action=\"personal-check\"></button></div>\n    <div class=\"demo-group-head\"><span>数码产品</span><small>2 件</small></div>\n    <div class=\"personal-edit-row\"><button data-module-action=\"open-modal\" data-modal=\"edit-shared\"><span><b>充电器</b><i class=\"item-qty\">x2</i><em>共享</em></span><small>共享行李</small></button><button class=\"carry-check\" data-module-action=\"personal-check\">✓</button></div>\n    <div class=\"personal-edit-row\"><button data-module-action=\"open-modal\" data-modal=\"edit-personal\"><span><b>耳机</b><i class=\"item-qty\">x1</i></span><small>个人行李</small></button><button class=\"carry-check off\" data-module-action=\"personal-check\"></button></div>\n  </div>\n  <div class=\"dual-add-dock\"><button data-module-action=\"open-modal\" data-modal=\"add-source-shared\"><i>＋</i><span>添加共享行李</span></button><button class=\"primary\" data-module-action=\"open-modal\" data-modal=\"add-source-personal\"><i>＋</i><span>添加个人行李</span></button></div>", "library-picker": "\n  <div class=\"demo-status\"><span>10:30</span><span>● ● ◒</span></div><div class=\"demo-top\"><button data-module-action=\"back-plan\">‹</button><span>从物品库添加</span><span></span></div>\n  <div class=\"picker-context\" data-picker-context>选择需要添加的物品</div>\n  <div class=\"demo-list-group plan-picker-list\"><div class=\"demo-group-head\"><span>个人证件</span><small>物品库</small></div>\n    <div class=\"picker-disabled\"><span><b>身份证</b><small>当前清单中已存在</small></span><em>已添加</em></div>\n    <div><span><b>工作证</b><small>个人证件</small></span><button data-module-action=\"toggle-plan-library\">＋</button></div>\n    <div><span><b>港澳通行证</b><small>个人证件</small></span><button data-module-action=\"toggle-plan-library\">＋</button></div>\n    <div class=\"demo-group-head\"><span>数码产品</span><small>物品库</small></div>\n    <div class=\"picker-disabled\"><span><b>充电器</b><small>当前清单中已存在</small></span><em>已添加</em></div>\n    <div><span><b>移动电源</b><small>数码产品</small></span><button data-module-action=\"toggle-plan-library\">＋</button></div>\n  </div><div class=\"picker-selection-bar\"><span>已选择 <b data-library-selected>0</b> 件</span><button data-module-action=\"save-plan-library\" disabled>保存</button></div>", "template-picker": "\n              <div class=\"demo-status\"><span>10:30</span><span>● ● ◒</span></div><div class=\"demo-top\"><button data-module-action=\"back-plan\">‹</button><span>选择行李模板</span><span></span></div>\n              <div class=\"picker-context\" data-picker-context>点击模板查看具体清单</div>\n              <div class=\"template-choice-list\"><button data-module-action=\"screen\" data-screen=\"template-picker-detail\"><span><b>户外徒步</b><small>12 件 · 4 个类别</small></span><i>›</i></button><button data-module-action=\"screen\" data-screen=\"template-picker-detail\"><span><b>海边玩水</b><small>9 件 · 3 个类别</small></span><i>›</i></button><button data-module-action=\"screen\" data-screen=\"template-picker-detail\"><span><b>冬季保暖</b><small>8 件 · 3 个类别</small></span><i>›</i></button></div>", "template-picker-detail": "\n  <div class=\"demo-status\"><span>10:30</span><span>● ● ◒</span></div><div class=\"demo-top\"><button data-module-action=\"screen\" data-screen=\"template-picker\">‹</button><span>户外徒步</span><span></span></div>\n  <div class=\"template-detail-head\"><small>个人模板</small><b>户外徒步</b><span>12 件 · 4 个类别</span></div>\n  <div class=\"demo-list-group plan-picker-list template-select-list\"><div class=\"demo-group-head\"><span>衣物</span><small>默认全选</small></div>\n    <div><span><b>冲锋衣</b><small>1 件</small></span><button class=\"selected\" data-module-action=\"toggle-plan-template\"></button></div>\n    <div><span><b>速干衣</b><small>2 件</small></span><button class=\"selected\" data-module-action=\"toggle-plan-template\"></button></div>\n    <div class=\"demo-group-head\"><span>装备</span><small>默认全选</small></div>\n    <div><span><b>登山杖</b><small>1 件</small></span><button class=\"selected\" data-module-action=\"toggle-plan-template\"></button></div>\n    <div><span><b>头灯等 9 件</b><small>模板其余物品</small></span><button class=\"selected\" data-module-action=\"toggle-plan-template\" data-item-count=\"9\"></button></div>\n  </div>\n  <div class=\"picker-selection-bar\"><span>已选择 <b data-template-selected>12</b> 件</span><button data-module-action=\"save-plan-template\">保存</button></div>", "discussion": "<div class=\"demo-status\"><span>10:30</span><span>● ● ◒</span></div><div class=\"demo-top\"><button data-module-action=\"screen\" data-screen=\"mine\">‹</button><span>共享行李讨论</span><button class=\"text-action\" data-module-action=\"open-modal\" data-modal=\"share-opinions\">分享</button></div><div class=\"discussion-item-list rich\"><button data-module-action=\"open-modal\" data-modal=\"discussion-item-info\"><span><span class=\"discussion-item-title\"><b>护照</b><em>2 / 3 已携带</em></span><small>需携带：我、小林、小周</small><span class=\"member-carry-state\"><i class=\"done\">我 已携带</i><i>小林 未携带</i><i class=\"done\">小周 已携带</i></span><span class=\"carry-progress-bar\"><i style=\"width:67%\"></i></span></span><strong>2 条讨论</strong><i>›</i></button><button data-module-action=\"open-modal\" data-modal=\"discussion-item-info\"><span><span class=\"discussion-item-title\"><b>充电器</b><em>1 / 2 已携带</em></span><small>需携带：我、小林</small><span class=\"member-carry-state\"><i class=\"done\">我 已携带</i><i>小林 未携带</i></span><span class=\"carry-progress-bar\"><i style=\"width:50%\"></i></span></span><strong>1 条讨论</strong><i>›</i></button><button data-module-action=\"open-modal\" data-modal=\"discussion-item-info\"><span><span class=\"discussion-item-title\"><b>移动电源</b><em>0 / 1 已携带</em></span><small>需携带：小周</small><span class=\"member-carry-state\"><i>小周 未携带</i></span><span class=\"carry-progress-bar\"><i style=\"width:0%\"></i></span></span><strong>暂无讨论</strong><i>›</i></button></div>", "shared-edit-list": "\n  <div class=\"demo-status\"><span>10:30</span><span>● ● ◒</span></div><div class=\"demo-top\"><button data-module-action=\"screen\" data-screen=\"library-picker\">‹</button><span>编辑共享行李</span><span></span></div>\n  <div class=\"picker-context\" data-shared-edit-context>保存前确认数量和携带人</div>\n  <div class=\"shared-edit-list\"><article><header><b>港澳通行证</b><button data-module-action=\"notify\" data-message=\"已移出待添加列表\">移除</button></header><div><span>数量</span><div class=\"gooh-stepper\"><button data-module-action=\"step\" data-delta=\"-1\">−</button><b data-count>1</b><button data-module-action=\"step\" data-delta=\"1\">＋</button></div></div><button class=\"carrier-field\" data-module-action=\"open-modal\" data-modal=\"carry-scope\"><span><small>携带人</small><b>我、小林</b></span><i>›</i></button></article><article><header><b>移动电源</b><button data-module-action=\"notify\" data-message=\"已移出待添加列表\">移除</button></header><div><span>数量</span><div class=\"gooh-stepper\"><button data-module-action=\"step\" data-delta=\"-1\">−</button><b data-count>1</b><button data-module-action=\"step\" data-delta=\"1\">＋</button></div></div><button class=\"carrier-field\" data-module-action=\"open-modal\" data-modal=\"carry-scope\"><span><small>携带人</small><b>我、小周</b></span><i>›</i></button></article></div>\n  <button class=\"blue-primary picker-save\" data-module-action=\"save-shared-edit-list\">保存共享行李</button>"}, "modals": {"shared-item": "<div class=\"demo-modal-backdrop\" data-module-action=\"close-modal\"></div><section class=\"demo-modal gooh-sheet\"><header><b>护照</b><button data-module-action=\"close-modal\">×</button></header><div class=\"carry-summary\"><b>携带情况 · 3/3</b><span>携带：我、小林、小周</span><small>未携带：无</small></div><div class=\"gooh-sheet-body\"><button class=\"gooh-setting-row\" data-module-action=\"open-modal\" data-modal=\"carry-scope\"><span><small>调整携带成员</small><b>3 人</b></span><i>›</i></button><button class=\"gooh-setting-row\" data-module-action=\"open-modal\" data-modal=\"opinions\"><span><small>讨论</small><b>2 人已发表</b></span><i>›</i></button></div><div class=\"gooh-sheet-actions\"><button data-module-action=\"open-modal\" data-modal=\"edit-shared\">编辑共享行李</button></div></section>", "shared-item-empty": "<div class=\"demo-modal-backdrop\" data-module-action=\"close-modal\"></div><section class=\"demo-modal gooh-sheet\"><header><b>港澳通行证</b><button data-module-action=\"close-modal\">×</button></header><div class=\"carry-summary\"><b>携带情况 · 2/3</b><span>携带：小林、小周</span><small>未携带：我</small></div><div class=\"gooh-sheet-body\"><button class=\"gooh-setting-row\" data-module-action=\"open-modal\" data-modal=\"carry-scope\"><span><small>调整携带成员</small><b>2 人</b></span><i>›</i></button><button class=\"gooh-setting-row\" data-module-action=\"open-modal\" data-modal=\"opinions-empty\"><span><small>讨论</small><b>暂无讨论</b></span><i>›</i></button></div><div class=\"gooh-sheet-actions\"><button data-module-action=\"open-modal\" data-modal=\"edit-shared\">编辑共享行李</button></div></section>", "shared-item-other": "<div class=\"demo-modal-backdrop\" data-module-action=\"close-modal\"></div><section class=\"demo-modal gooh-sheet\"><header><b>学生证</b><button data-module-action=\"close-modal\">×</button></header><div class=\"carry-summary\"><b>携带情况 · 1/3</b><span>携带：小周</span><small>未携带：我、小林</small></div><div class=\"gooh-sheet-body\"><button class=\"gooh-setting-row\" data-module-action=\"open-modal\" data-modal=\"carry-scope\"><span><small>调整携带成员</small><b>1 人</b></span><i>›</i></button><button class=\"gooh-setting-row\" data-module-action=\"open-modal\" data-modal=\"opinions-others\"><span><small>讨论</small><b>1 人已发表</b></span><i>›</i></button></div><div class=\"gooh-sheet-actions\"><button data-module-action=\"open-modal\" data-modal=\"edit-shared\">编辑共享行李</button></div></section>", "edit-shared": "<div class=\"demo-modal-backdrop\" data-module-action=\"close-modal\"></div><section class=\"demo-modal gooh-sheet tall\"><header><b>编辑共享行李</b><button data-module-action=\"close-modal\">×</button></header><div class=\"gooh-form\"><div class=\"luggage-name-quantity-row\"><label class=\"name-field\"><span>物品名称</span><input maxlength=\"20\" value=\"护照\"></label><label class=\"quantity-field\"><span>数量</span><div class=\"gooh-stepper\"><button data-module-action=\"step\" data-delta=\"-1\">−</button><b data-count>1</b><button data-module-action=\"step\" data-delta=\"1\">＋</button></div></label></div><label><span>清单类别</span><button data-module-action=\"open-modal\" data-modal=\"plan-category-picker\"><b data-category-value>个人证件</b> ›</button></label><label><span>携带人</span><button data-module-action=\"open-modal\" data-modal=\"carry-scope\"><b>所有计划成员</b> ›</button></label></div><div class=\"gooh-dual-actions\"><button class=\"danger-outline\" data-module-action=\"open-modal\" data-modal=\"delete-shared\">删除</button><button class=\"blue-primary\" data-module-action=\"save-modal\">保存修改</button></div></section>", "delete-shared": "<div class=\"demo-modal-backdrop\" data-module-action=\"close-modal\"></div><section class=\"demo-modal gooh-sheet confirm-sheet\"><header><b>删除共同行李？</b><button data-module-action=\"close-modal\">×</button></header><div class=\"confirm-copy\"><b>“护照”将从所有成员的行李清单中删除</b><span>相关讨论内容也会同时删除，此操作无法撤销。</span></div><div class=\"gooh-dual-actions\"><button data-module-action=\"close-modal\">取消</button><button class=\"danger-fill\" data-module-action=\"confirm-delete-all\">确认删除</button></div></section>", "carry-scope": "<div class=\"demo-modal-backdrop\" data-module-action=\"close-modal\"></div><section class=\"demo-modal gooh-sheet tall\"><header><b>携带成员</b><button data-module-action=\"close-modal\">×</button></header><div class=\"gooh-check-list\"><label><span>我</span><input type=\"checkbox\" checked data-carry-member></label><label><span>小林</span><input type=\"checkbox\" checked data-carry-member></label><label><span>小周</span><input type=\"checkbox\" checked data-carry-member></label></div><button class=\"blue-primary full-action\" data-module-action=\"save-carry-scope\">保存</button></section>", "opinions": "<div class=\"demo-modal-backdrop\" data-module-action=\"close-modal\"></div><section class=\"demo-modal gooh-sheet tall\"><header><b>护照 · 讨论</b><button data-module-action=\"close-modal\">×</button></header><div class=\"gooh-opinions\"><article><b>小林</b><p>建议出发前再次确认护照有效期。</p></article><article class=\"mine\"><b>我的意见</b><p>我会同时准备一份复印件。</p></article></div><div class=\"gooh-dual-actions\"><button data-module-action=\"delete-opinion-modal\">删除我的意见</button><button class=\"blue-primary\" data-module-action=\"open-modal\" data-modal=\"opinion-editor\">编辑我的意见</button></div></section>", "opinions-others": "<div class=\"demo-modal-backdrop\" data-module-action=\"close-modal\"></div><section class=\"demo-modal gooh-sheet tall\"><header><b>学生证 · 讨论</b><button data-module-action=\"close-modal\">×</button></header><div class=\"gooh-opinions\"><article><b>小周</b><p>周三部分景点可以使用学生证享受门票优惠。</p></article></div><button class=\"blue-primary full-action\" data-module-action=\"open-modal\" data-modal=\"opinion-editor\">发表我的意见</button></section>", "opinions-empty": "<div class=\"demo-modal-backdrop\" data-module-action=\"close-modal\"></div><section class=\"demo-modal gooh-sheet tall\"><header><b>港澳通行证 · 讨论</b><button data-module-action=\"close-modal\">×</button></header><div class=\"gooh-empty\"><i>…</i><b>还没有讨论内容</b><span>你可以发表第一条意见</span></div><button class=\"blue-primary full-action\" data-module-action=\"open-modal\" data-modal=\"opinion-editor\">发表我的意见</button></section>", "opinion-editor": "<div class=\"demo-modal-backdrop\" data-module-action=\"close-modal\"></div><section class=\"demo-modal gooh-sheet tall\"><header><b>我的意见</b><button data-module-action=\"close-modal\">×</button></header><label class=\"gooh-textarea\"><textarea id=\"opinion-text\" maxlength=\"200\" data-limit-input placeholder=\"写下你的意见\"></textarea><small><span data-count-for=\"opinion-text\">0</span>/200</small></label><button class=\"blue-primary full-action\" data-module-action=\"save-opinion-modal\">保存意见</button></section>", "edit-personal": "<div class=\"demo-modal-backdrop\" data-module-action=\"close-modal\"></div><section class=\"demo-modal gooh-sheet tall\"><header><b>编辑个人行李</b><button data-module-action=\"close-modal\">×</button></header><div class=\"gooh-form\"><div class=\"luggage-name-quantity-row\"><label class=\"name-field\"><span>物品名称</span><input maxlength=\"20\" value=\"身份证\"></label><label class=\"quantity-field\"><span>数量</span><div class=\"gooh-stepper\"><button data-module-action=\"step\" data-delta=\"-1\">−</button><b data-count>1</b><button data-module-action=\"step\" data-delta=\"1\">＋</button></div></label></div><label><span>清单类别</span><button data-module-action=\"open-modal\" data-modal=\"plan-category-picker\"><b data-category-value>个人证件</b> ›</button></label></div><div class=\"gooh-dual-actions\"><button class=\"danger-outline\" data-module-action=\"open-modal\" data-modal=\"delete-personal\">删除</button><button class=\"blue-primary\" data-module-action=\"save-modal\">保存修改</button></div></section>", "edit-personal-shared": "<div class=\"demo-modal-backdrop\" data-module-action=\"close-modal\"></div><section class=\"demo-modal gooh-sheet tall\"><header><b>编辑已共享行李</b><button data-module-action=\"close-modal\">×</button></header><div class=\"sync-warning\">这件行李已共享，修改会同步给所有相关成员</div><div class=\"gooh-form\"><label><span>物品名称</span><input maxlength=\"20\" value=\"工作证\"></label><label><span>数量</span><div class=\"gooh-stepper\"><button data-module-action=\"step\" data-delta=\"-1\">−</button><b data-count>1</b><button data-module-action=\"step\" data-delta=\"1\">＋</button></div></label><label><span>清单类别</span><button data-module-action=\"open-modal\" data-modal=\"plan-category-picker\"><b data-category-value>个人证件</b> ›</button></label></div><div class=\"gooh-dual-actions\"><button class=\"danger-outline\" data-module-action=\"open-modal\" data-modal=\"delete-personal-shared\">删除</button><button class=\"blue-primary\" data-module-action=\"save-modal\">保存修改</button></div></section>", "delete-personal": "<div class=\"demo-modal-backdrop\" data-module-action=\"close-modal\"></div><section class=\"demo-modal gooh-sheet confirm-sheet\"><header><b>删除个人行李？</b><button data-module-action=\"close-modal\">×</button></header><div class=\"confirm-copy\"><b>确认删除“身份证”？</b><span>只会从你的个人行李中删除。</span></div><div class=\"gooh-dual-actions\"><button data-module-action=\"close-modal\">取消</button><button class=\"danger-fill\" data-module-action=\"confirm-delete-personal\">确认删除</button></div></section>", "delete-personal-shared": "<div class=\"demo-modal-backdrop\" data-module-action=\"close-modal\"></div><section class=\"demo-modal gooh-sheet confirm-sheet\"><header><b>移出个人行李？</b><button data-module-action=\"close-modal\">×</button></header><div class=\"confirm-copy\"><b>“工作证”虽然是共享行李</b><span>本次操作仅将它从你的个人行李中移出，不会影响其他成员的行李。</span></div><div class=\"gooh-dual-actions\"><button data-module-action=\"close-modal\">取消</button><button class=\"danger-fill\" data-module-action=\"confirm-delete-personal\">确认移出</button></div></section>", "add-source-shared": "<div class=\"demo-modal-backdrop\" data-module-action=\"close-modal\"></div><section class=\"demo-modal gooh-sheet quick-source-sheet\"><div class=\"floating-source-actions\"><button data-module-action=\"open-plan-picker\" data-screen=\"library-picker\" data-scope=\"public\" data-source=\"library\"><i>▣</i><span>物品库</span></button><button data-module-action=\"open-plan-picker\" data-screen=\"template-picker\" data-scope=\"public\" data-source=\"template\"><i>▤</i><span>行李模板</span></button><button data-module-action=\"open-modal\" data-modal=\"custom-add-shared\"><i>＋</i><span>自定义添加</span></button></div></section>", "add-source-personal": "<div class=\"demo-modal-backdrop\" data-module-action=\"close-modal\"></div><section class=\"demo-modal gooh-sheet quick-source-sheet\"><div class=\"floating-source-actions\"><button data-module-action=\"open-plan-picker\" data-screen=\"library-picker\" data-scope=\"mine\" data-source=\"library\"><i>▣</i><span>物品库</span></button><button data-module-action=\"open-plan-picker\" data-screen=\"template-picker\" data-scope=\"mine\" data-source=\"template\"><i>▤</i><span>行李模板</span></button><button data-module-action=\"open-modal\" data-modal=\"custom-add-personal\"><i>＋</i><span>自定义添加</span></button></div></section>", "custom-add-shared": "<div class=\"demo-modal-backdrop\" data-module-action=\"close-modal\"></div><section class=\"demo-modal gooh-sheet tall\"><header><b>新增共享行李</b><button data-module-action=\"close-modal\">×</button></header><div class=\"gooh-form\"><div class=\"luggage-name-quantity-row\"><label class=\"name-field\"><span>物品名称</span><input maxlength=\"20\" placeholder=\"请输入名称\"></label><label class=\"quantity-field\"><span>数量</span><div class=\"gooh-stepper\"><button data-module-action=\"step\" data-delta=\"-1\">−</button><b data-count>1</b><button data-module-action=\"step\" data-delta=\"1\">＋</button></div></label></div><label><span>清单类别</span><button data-module-action=\"open-modal\" data-modal=\"plan-category-picker\"><b data-category-value>其他</b> ›</button></label><label><span>携带人</span><button data-module-action=\"open-modal\" data-modal=\"carry-scope\"><b>所有计划成员</b> ›</button></label></div><button class=\"blue-primary full-action\" data-module-action=\"open-modal\" data-modal=\"confirm-library-shared\">保存</button></section>", "custom-add-personal": "<div class=\"demo-modal-backdrop\" data-module-action=\"close-modal\"></div><section class=\"demo-modal gooh-sheet tall\"><header><b>新增个人行李</b><button data-module-action=\"close-modal\">×</button></header><div class=\"gooh-form\"><div class=\"luggage-name-quantity-row\"><label class=\"name-field\"><span>物品名称</span><input maxlength=\"20\" placeholder=\"请输入名称\"></label><label class=\"quantity-field\"><span>数量</span><div class=\"gooh-stepper\"><button data-module-action=\"step\" data-delta=\"-1\">−</button><b data-count>1</b><button data-module-action=\"step\" data-delta=\"1\">＋</button></div></label></div><label><span>清单类别</span><button data-module-action=\"open-modal\" data-modal=\"plan-category-picker\"><b data-category-value>其他</b> ›</button></label></div><button class=\"blue-primary full-action\" data-module-action=\"save-modal\">保存</button></section>", "confirm-library-shared": "<div class=\"demo-modal-backdrop\" data-module-action=\"close-modal\"></div><section class=\"demo-modal gooh-sheet confirm-sheet\"><header><b>加入共同行李？</b><button data-module-action=\"close-modal\">×</button></header><div class=\"confirm-copy\"><b>这件物品将添加到所有成员的行李清单</b><span>确认后作为共同行李展示，所有成员都能看到。</span></div><div class=\"gooh-dual-actions\"><button data-module-action=\"close-modal\">取消</button><button class=\"blue-primary\" data-module-action=\"confirm-plan-add\">确认添加</button></div></section>", "confirm-library-personal": "<div class=\"demo-modal-backdrop\" data-module-action=\"close-modal\"></div><section class=\"demo-modal gooh-sheet confirm-sheet\"><header><b>加入个人行李？</b><button data-module-action=\"close-modal\">×</button></header><div class=\"confirm-copy\"><b>所选物品只加入你的个人行李</b><span>不会创建或修改任何共享物品。</span></div><div class=\"gooh-dual-actions\"><button data-module-action=\"close-modal\">取消</button><button class=\"blue-primary\" data-module-action=\"confirm-plan-add\">确认添加</button></div></section>", "confirm-template-shared": "<div class=\"demo-modal-backdrop\" data-module-action=\"close-modal\"></div><section class=\"demo-modal gooh-sheet tall\"><header><b>更新共享行李列表</b><button data-module-action=\"close-modal\">×</button></header><div class=\"template-validation\"><b>校验结果</b><span data-template-detection>共享列表已有 5 件 · 2 件与模板重复</span><small data-template-result>合并时重复物品使用刚刚编辑的新数量和携带人。</small></div><div class=\"gooh-form\" data-apply-options><label class=\"template-mode-field\"><span>保存方式</span><div class=\"demo-segments\"><button class=\"selected\" data-module-action=\"apply-mode\" data-mode=\"merge\">合并</button><button data-module-action=\"apply-mode\" data-mode=\"replace\">替换</button></div><small data-mode-hint>保留原有其他共享行李，重复物品使用新的设置</small></label></div><button class=\"blue-primary full-action\" data-module-action=\"confirm-plan-add\">确认合并</button></section>", "confirm-template-personal": "<div class=\"demo-modal-backdrop\" data-module-action=\"close-modal\"></div><section class=\"demo-modal gooh-sheet tall\"><header><b>更新个人行李列表</b><button data-module-action=\"close-modal\">×</button></header><div class=\"template-validation\"><b>校验结果</b><span>个人行李已有 4 件 · 1 件与模板重复</span><small>合并时重复物品使用模板中的新数量。</small></div><div class=\"gooh-form\"><label class=\"template-mode-field\"><span>保存方式</span><div class=\"demo-segments\"><button class=\"selected\" data-module-action=\"apply-mode\" data-mode=\"merge\">合并</button><button data-module-action=\"apply-mode\" data-mode=\"replace\">替换</button></div><small data-mode-hint>保留其他个人行李，重复物品使用新的设置</small></label></div><button class=\"blue-primary full-action\" data-module-action=\"confirm-plan-add\">确认合并</button></section>", "plan-category-picker": "<div class=\"demo-modal-backdrop\" data-module-action=\"close-modal\"></div><section class=\"demo-modal gooh-sheet tall\"><header><b>选择清单类别</b><button data-module-action=\"close-modal\">×</button></header><div class=\"gooh-check-list category-picker-list\"><button data-module-action=\"choose-asset-category\" data-category=\"证件\"><span>证件</span><i>系统类别</i></button><button data-module-action=\"choose-asset-category\" data-category=\"数码产品\"><span>数码产品</span><i>系统类别</i></button><button data-module-action=\"choose-asset-category\" data-category=\"潜水装备\"><span>潜水装备</span><i>个人类别</i></button><button data-module-action=\"choose-asset-category\" data-category=\"其他\"><span>其他</span><i>系统类别</i></button></div></section>", "share-opinions": "<div class=\"demo-modal-backdrop\" data-module-action=\"close-modal\"></div><section class=\"demo-modal gooh-sheet tall\"><header><b>分享公共行李讨论</b><button data-module-action=\"close-modal\">×</button></header><div class=\"module-share-image discussion-report\"><small>在重庆的7日</small><b>共同行李讨论汇总</b><div><span>护照</span><p>2 人发表</p></div><div><span>充电器</span><p>1 人发表</p></div></div><div class=\"gooh-dual-actions\"><button data-module-action=\"notify\" data-message=\"图片已保存\">保存图片</button><button class=\"blue-primary\" data-module-action=\"notify\" data-message=\"已分享到群聊\">分享到群聊</button></div></section>", "discussion-item-info": "<div class=\"demo-modal-backdrop\" data-module-action=\"close-modal\"></div><section class=\"demo-modal gooh-sheet tall\"><header><b>护照</b><button data-module-action=\"close-modal\">×</button></header><div class=\"luggage-info-grid\"><div><small>创建人</small><b>小林</b></div><div><small>携带人</small><b>我、小林、小周</b></div></div><div class=\"detail-carry-progress\"><span><b>携带进度</b><strong>2 / 3</strong></span><div><i style=\"width:67%\"></i></div></div><div class=\"discussion-info\"><b>讨论信息 · 2 条</b><p><strong>小林</strong> 出发前再确认一次有效期。</p><p><strong>我</strong> 我会在周五统一核对证件。</p></div><div class=\"gooh-dual-actions\"><button data-module-action=\"open-modal\" data-modal=\"opinion-editor\">编辑我的意见</button><button class=\"blue-primary\" data-module-action=\"open-modal\" data-modal=\"edit-shared\">编辑行李</button></div></section>"}}, {"id": "item-library", "name": "行李资产", "source": "来自结论 A", "purpose": "从个人中心进入，管理可跨计划复用的个人行李模板。", "entry": "个人中心 → 行李资产", "flow": ["进入个人中心", "打开行李资产", "查看个人模板", "维护模板内容", "新建空模板"], "screen_titles": {"main": "个人中心", "templates": "行李资产", "template-detail": "个人模板详情", "template-empty": "新模板空状态", "system-template-detail": "系统模板详情"}, "screen_notes": {"main": [["页面入口", "行李资产位于个人中心，与任何单个计划无绑定。"], ["承接内容", "点击行李资产进入个人模板列表。"]], "templates": [["模板分组", "系统模板和个人模板分组展示。"], ["新建", "标题栏右侧“+ 新建模板”创建个人模板。"]], "template-detail": [["个人模板", "标题栏“编辑”统一承接改名和删除模板。"], ["内容维护", "可编辑模板物品，也可继续添加物品。"]], "template-empty": [["空状态", "模板主页面只保留添加行李入口。"], ["编辑", "名称编辑与删除模板都收纳在标题栏“编辑”中。"], ["删除", "选择删除后必须再次确认。", "system"]], "system-template-detail": [["系统模板", "只读查看系统提供的模板内容。"], ["限制", "不支持改名、删除、编辑物品或添加物品。", "system"]]}, "modal_titles": {"template-item": "模板物品编辑弹窗", "template-add": "模板添加物品弹窗", "asset-category-picker": "个人物品类别选择弹窗", "new-template": "新建个人模板弹窗", "template-name": "编辑模板名称弹窗", "template-delete": "删除个人模板确认弹窗", "template-item-delete": "删除模板物品确认弹窗", "template-add-library": "从物品库添加到模板", "template-add-system": "从系统推荐添加到模板", "template-add-custom": "自定义模板物品弹窗", "template-settings": "编辑个人模板弹窗"}, "modal_notes": {"template-item": [["编辑", "可修改名称、数量和类别。"], ["删除", "删除只影响当前模板，并进入二次确认。", "system"]], "template-add": [["来源", "支持物品库、系统推荐和自定义添加。"], ["后续操作", "三个入口均可继续操作，不会停留在不可点击的来源弹窗。"]], "asset-category-picker": [["范围", "只显示可用类别；系统类别与个人类别都可用于物品归类。"], ["结果", "选择后返回新增或编辑弹窗。"]], "new-template": [["第一步", "先输入模板名称，1–20 字且不可重名。"], ["下一步", "确认后进入空模板管理页。"]], "template-name": [["输入", "名称必填 1–20 字；与其他个人模板重名时阻止保存。"]], "template-delete": [["删除影响", "删除整个个人模板，不影响已经加入计划的行李。", "system"], ["操作", "删除后返回个人模板列表；此操作不可撤销。"]], "template-item-delete": [["影响", "只从当前模板删除，不影响物品库和已创建的计划。", "system"]], "template-add-library": [["操作", "点击“＋”加入当前模板，已加入显示勾选。"]], "template-add-system": [["操作", "点击“＋”选择系统推荐物品，再点击底部保存。"], ["关系", "保存后加入当前模板，不会自动加入物品库。", "system"]], "template-add-custom": [["输入", "名称 1–20 字、数量 1–99，并选择类别。"]], "template-settings": [["名称", "模板名称必填，1–20 字。"], ["删除", "删除模板不影响已经加入计划的行李。", "system"]]}, "screens": {"main": "<div class=\"demo-status\"><span>10:30</span><span>● ● ◒</span></div><div class=\"demo-top\"><button>‹</button><span>个人中心</span><span></span></div><div class=\"profile-card\"><i>林</i><span><b>小林</b><small>旅行 12 次 · 同行好友 8 人</small></span></div><div class=\"profile-menu\"><button data-module-action=\"screen\" data-screen=\"templates\"><i>▤</i><span><b>行李资产</b><small>管理个人行李模板</small></span><em>›</em></button><button><i>⚙</i><span><b>设置</b><small>账号与通知</small></span><em>›</em></button></div>", "templates": "<div class=\"demo-status\"><span>10:30</span><span>● ● ◒</span></div><div class=\"demo-top\"><button data-module-action=\"screen\" data-screen=\"main\">‹</button><span>行李模板</span><button class=\"text-action\" data-module-action=\"open-modal\" data-modal=\"new-template\">＋ 新建模板</button></div><div class=\"template-flat-list\"><div class=\"template-list-card system\"><button class=\"template-main full\" data-module-action=\"screen\" data-screen=\"system-template-detail\"><small><em class=\"template-origin system\">系统</em>10 件</small><b>城市短途</b><span>证件、数码、衣物等 4 类</span></button></div><div class=\"template-list-card system\"><button class=\"template-main full\" data-module-action=\"screen\" data-screen=\"system-template-detail\"><small><em class=\"template-origin system\">系统</em>14 件</small><b>冬季旅行</b><span>保暖衣物、护理、药品等 5 类</span></button></div><div class=\"template-list-card\"><button class=\"template-main full\" data-module-action=\"screen\" data-screen=\"template-detail\"><small><em class=\"template-origin user\">用户</em>12 件</small><b>户外徒步</b><span>衣物、装备、药品等 4 类</span></button></div><div class=\"template-list-card\"><button class=\"template-main full\" data-module-action=\"screen\" data-screen=\"template-detail\"><small><em class=\"template-origin user\">用户</em>9 件</small><b>海边玩水</b><span>衣物、护理、装备等 3 类</span></button></div></div>", "template-detail": "<div class=\"demo-status\"><span>10:30</span><span>● ● ◒</span></div><div class=\"demo-top\"><button data-module-action=\"screen\" data-screen=\"templates\">‹</button><span>户外徒步</span><button class=\"text-action\" data-module-action=\"open-modal\" data-modal=\"template-settings\">编辑</button></div><div class=\"template-detail-head\"><small>我的模板</small><b>户外徒步</b><span>12 件 · 4 个类别</span></div><div class=\"demo-list-group reference-list\"><div class=\"demo-group-head\"><span>衣物</span><small>4 件</small></div><button class=\"reference-row\" data-module-action=\"open-modal\" data-modal=\"template-item\"><span><b>冲锋衣</b><small>1 件</small></span><i>›</i></button><button class=\"reference-row\" data-module-action=\"open-modal\" data-modal=\"template-item\"><span><b>速干衣</b><small>2 件</small></span><i>›</i></button><div class=\"demo-group-head\"><span>装备</span><small>3 件</small></div><button class=\"reference-row\" data-module-action=\"open-modal\" data-modal=\"template-item\"><span><b>登山杖</b><small>1 件</small></span><i>›</i></button></div><button class=\"gooh-add-button\" data-module-action=\"open-modal\" data-modal=\"template-add\">＋ 添加物品</button>", "template-empty": "<div class=\"demo-status\"><span>10:30</span><span>● ● ◒</span></div><div class=\"demo-top\"><button data-module-action=\"screen\" data-screen=\"templates\">‹</button><span>露营清单</span><button class=\"text-action\" data-module-action=\"open-modal\" data-modal=\"template-settings\">编辑</button></div><div class=\"gooh-empty asset-empty\"><i>＋</i><b>模板中还没有行李</b><span>添加物品后即可在计划中快速选择</span></div><button class=\"blue-primary template-empty-add\" data-module-action=\"open-modal\" data-modal=\"template-add\">＋ 添加行李</button>", "system-template-detail": "<div class=\"demo-status\"><span>10:30</span><span>● ● ◒</span></div><div class=\"demo-top\"><button data-module-action=\"screen\" data-screen=\"templates\">‹</button><span>城市短途</span><span></span></div><div class=\"template-detail-head system\"><small>系统模板 · 只读</small><b>城市短途</b><span>10 件 · 4 个类别</span></div><div class=\"demo-list-group reference-list readonly\"><div class=\"demo-group-head\"><span>个人证件</span><small>3 件</small></div><div class=\"template-preview-row\"><b>身份证</b><small>1 件</small></div><div class=\"template-preview-row\"><b>银行卡</b><small>1 件</small></div><div class=\"demo-group-head\"><span>数码产品</span><small>3 件</small></div><div class=\"template-preview-row\"><b>充电器</b><small>1 件</small></div><div class=\"template-preview-row\"><b>移动电源</b><small>1 件</small></div></div>"}, "modals": {"template-item": "<div class=\"demo-modal-backdrop\" data-module-action=\"close-modal\"></div><section class=\"demo-modal gooh-sheet tall\"><header><b>编辑模板物品</b><button data-module-action=\"close-modal\">×</button></header><div class=\"gooh-form\"><label><span>物品名称</span><input maxlength=\"20\" value=\"冲锋衣\"></label><label><span>数量</span><div class=\"gooh-stepper\"><button data-module-action=\"step\" data-delta=\"-1\">−</button><b data-count>1</b><button data-module-action=\"step\" data-delta=\"1\">＋</button></div></label><label><span>类别</span><button data-module-action=\"open-modal\" data-modal=\"asset-category-picker\"><b data-category-value>衣物</b> ›</button></label></div><div class=\"gooh-dual-actions\"><button class=\"danger-outline\" data-module-action=\"open-modal\" data-modal=\"template-item-delete\">删除物品</button><button class=\"blue-primary\" data-module-action=\"save-modal\">保存修改</button></div></section>", "template-add": "<div class=\"demo-modal-backdrop\" data-module-action=\"close-modal\"></div><section class=\"demo-modal gooh-sheet\"><header><b>添加模板物品</b><button data-module-action=\"close-modal\">×</button></header><div class=\"gooh-source-grid\"><button data-module-action=\"open-modal\" data-modal=\"template-add-library\"><i>▣</i><b>物品库</b><span>选择常用物品</span></button><button data-module-action=\"open-modal\" data-modal=\"template-add-system\"><i>☆</i><b>系统推荐</b><span>选择系统物品</span></button><button data-module-action=\"open-modal\" data-modal=\"template-add-custom\"><i>＋</i><b>自定义添加</b><span>新建模板物品</span></button></div></section>", "asset-category-picker": "<div class=\"demo-modal-backdrop\" data-module-action=\"close-modal\"></div><section class=\"demo-modal gooh-sheet tall\"><header><b>选择类别</b><button data-module-action=\"close-modal\">×</button></header><div class=\"gooh-check-list category-picker-list\"><button data-module-action=\"choose-asset-category\" data-category=\"证件\"><span>证件</span><i>系统类别</i></button><button data-module-action=\"choose-asset-category\" data-category=\"数码产品\"><span>数码产品</span><i>系统类别</i></button><button data-module-action=\"choose-asset-category\" data-category=\"潜水装备\"><span>潜水装备</span><i>个人类别</i></button><button data-module-action=\"choose-asset-category\" data-category=\"未分类\"><span>未分类</span><i>系统类别</i></button></div></section>", "new-template": "<div class=\"demo-modal-backdrop\" data-module-action=\"close-modal\"></div><section class=\"demo-modal gooh-sheet\"><header><b>新建个人模板</b><button data-module-action=\"close-modal\">×</button></header><div class=\"gooh-form\"><label><span>模板名称</span><input maxlength=\"20\" value=\"露营清单\"></label></div><button class=\"blue-primary full-action\" data-module-action=\"create-template\">确认并创建</button></section>", "template-name": "<div class=\"demo-modal-backdrop\" data-module-action=\"close-modal\"></div><section class=\"demo-modal gooh-sheet\"><header><b>编辑模板名称</b><button data-module-action=\"close-modal\">×</button></header><div class=\"gooh-form\"><label><span>模板名称</span><input maxlength=\"20\" value=\"户外徒步\"></label></div><button class=\"blue-primary full-action\" data-module-action=\"save-modal\">保存名称</button></section>", "template-delete": "<div class=\"demo-modal-backdrop\" data-module-action=\"close-modal\"></div><section class=\"demo-modal gooh-sheet confirm-sheet\"><header><b>删除个人模板？</b><button data-module-action=\"close-modal\">×</button></header><div class=\"confirm-copy\"><b>确认删除这个个人模板？</b><span>模板删除后无法恢复，但不会影响已经加入计划的行李。</span></div><div class=\"gooh-dual-actions\"><button data-module-action=\"close-modal\">取消</button><button class=\"danger-fill\" data-module-action=\"confirm-delete-template\">确认删除</button></div></section>", "template-item-delete": "<div class=\"demo-modal-backdrop\" data-module-action=\"close-modal\"></div><section class=\"demo-modal gooh-sheet confirm-sheet\"><header><b>删除模板物品？</b><button data-module-action=\"close-modal\">×</button></header><div class=\"confirm-copy\"><b>确认从模板删除“冲锋衣”？</b><span>不会删除物品库中的物品，也不影响已有计划。</span></div><div class=\"gooh-dual-actions\"><button data-module-action=\"close-modal\">取消</button><button class=\"danger-fill\" data-module-action=\"save-modal\">确认删除</button></div></section>", "template-add-library": "<div class=\"demo-modal-backdrop\" data-module-action=\"close-modal\"></div><section class=\"demo-modal gooh-sheet tall\"><header><b>从物品库添加</b><button data-module-action=\"close-modal\">×</button></header><div class=\"system-picker-list\"><div><b>身份证</b><button data-module-action=\"template-direct-add\"><i class=\"plus-mark\">＋</i></button></div><div><b>充电器</b><button data-module-action=\"template-direct-add\"><i class=\"plus-mark\">＋</i></button></div><div><b>冲锋衣</b><button disabled><i class=\"carry-check\">✓</i></button></div></div></section>", "template-add-system": "<div class=\"demo-modal-backdrop\" data-module-action=\"close-modal\"></div><section class=\"demo-modal gooh-sheet tall\"><header><b>从系统推荐添加</b><button data-module-action=\"close-modal\">×</button></header><div class=\"system-picker-list\"><div><b>防水袋</b><button data-module-action=\"template-direct-add\"><i class=\"plus-mark\">＋</i></button></div><div><b>急救毯</b><button data-module-action=\"template-direct-add\"><i class=\"plus-mark\">＋</i></button></div><div><b>登山杖</b><button data-module-action=\"template-direct-add\"><i class=\"plus-mark\">＋</i></button></div></div><div class=\"picker-selection-bar modal-selection-bar\"><span>已选择 <b data-recommended-selected>0</b> 件</span><button data-module-action=\"save-recommended\" disabled>保存</button></div></section>", "template-add-custom": "<div class=\"demo-modal-backdrop\" data-module-action=\"close-modal\"></div><section class=\"demo-modal gooh-sheet tall\"><header><b>自定义模板物品</b><button data-module-action=\"close-modal\">×</button></header><div class=\"gooh-form\"><label><span>物品名称</span><input maxlength=\"20\" placeholder=\"输入物品名称\"></label><label><span>数量</span><div class=\"gooh-stepper\"><button data-module-action=\"step\" data-delta=\"-1\">−</button><b data-count>1</b><button data-module-action=\"step\" data-delta=\"1\">＋</button></div></label><label><span>类别</span><button data-module-action=\"open-modal\" data-modal=\"asset-category-picker\"><b data-category-value>未分类</b> ›</button></label></div><button class=\"blue-primary full-action\" data-module-action=\"save-modal\">添加到模板</button></section>", "template-settings": "<div class=\"demo-modal-backdrop\" data-module-action=\"close-modal\"></div><section class=\"demo-modal gooh-sheet\"><header><b>编辑个人模板</b><button data-module-action=\"close-modal\">×</button></header><div class=\"gooh-form\"><label><span>模板名称</span><input maxlength=\"20\" value=\"户外徒步\"></label></div><button class=\"blue-primary full-action\" data-module-action=\"save-modal\">保存名称</button><button class=\"sheet-danger-action\" data-module-action=\"open-modal\" data-modal=\"template-delete\">删除模板</button></section>"}}];
     const mainTabs = Array.from(document.querySelectorAll('.main-tab'));
     const mainPanels = Array.from(document.querySelectorAll('.main-panel'));
 
@@ -2002,14 +2643,77 @@
 
     mainTabs.forEach(tab => tab.addEventListener('click', () => switchMainPanel(tab.dataset.panel)));
 
-    const moduleTabs = document.getElementById('module-tabs');
-    const moduleFlow = document.getElementById('module-flow');
+    const dynamicPageNav = document.getElementById('dynamic-page-nav');
+    const staticPages = document.getElementById('static-pages');
     const moduleStage = document.getElementById('module-stage');
     const moduleLogic = document.getElementById('module-logic');
     let activeModuleId = MODULE_DEMOS[0].id;
     let activeModuleScreen = 'main';
     let modalStack = [];
-    let planReturnScreen = 'public';
+    let planReturnScreen = 'mine';
+    let planAddSource = 'library';
+
+    const DEMO_NAV_GROUPS = [
+      {
+        title: '计划行李', module: 'plan-list', items: [
+          { label: '行李清单主页', screen: 'mine' },
+          { label: '编辑个人行李', screen: 'mine', modal: 'edit-personal' },
+          { label: '编辑共享行李', screen: 'mine', modal: 'edit-shared' },
+          { label: '添加个人行李', screen: 'mine', modal: 'add-source-personal' },
+          { label: '添加共享行李', screen: 'mine', modal: 'add-source-shared' },
+          { label: '共享行李编辑列表', screen: 'shared-edit-list' },
+          { label: '共享行李讨论', screen: 'discussion' },
+          { label: '共享行李信息', screen: 'discussion', modal: 'discussion-item-info' },
+          { label: '物品库选择', screen: 'library-picker', returnScreen: 'mine' },
+          { label: '模板列表', screen: 'template-picker', returnScreen: 'mine' },
+          { label: '模板物品选择', screen: 'template-picker-detail', returnScreen: 'mine' },
+          { label: '模板校验确认', screen: 'template-picker-detail', modal: 'confirm-template-personal', returnScreen: 'mine' },
+        ]
+      },
+      {
+        title: '行李资产', module: 'item-library', items: [
+          { label: '个人中心', screen: 'main' },
+          { label: '行李资产', screen: 'templates' },
+          { label: '个人模板详情', screen: 'template-detail' },
+          { label: '编辑个人模板', screen: 'template-detail', modal: 'template-settings' },
+          { label: '系统模板详情', screen: 'system-template-detail' },
+          { label: '新模板空状态', screen: 'template-empty' },
+          { label: '新建模板', screen: 'templates', modal: 'new-template' },
+        ]
+      },
+    ];
+
+    const STATIC_FLOWS = [
+      {
+        title: '模块 1 · 计划行李', subtitle: '一张携带清单，通过标签区分个人物品和共享物品。', module: 'plan-list',
+        items: [
+          { label: '行李清单主页', screen: 'mine' },
+          { label: '编辑个人行李', screen: 'mine', modal: 'edit-personal' },
+          { label: '编辑共享行李', screen: 'mine', modal: 'edit-shared' },
+          { label: '添加个人行李', screen: 'mine', modal: 'add-source-personal' },
+          { label: '添加共享行李', screen: 'mine', modal: 'add-source-shared' },
+          { label: '物品库选择', screen: 'library-picker' },
+          { label: '共享编辑列表', screen: 'shared-edit-list' },
+          { label: '共享行李讨论', screen: 'discussion' },
+          { label: '共享行李信息', screen: 'discussion', modal: 'discussion-item-info' },
+          { label: '选择模板', screen: 'template-picker' },
+          { label: '选择模板物品', screen: 'template-picker-detail' },
+          { label: '校验并确认', screen: 'template-picker-detail', modal: 'confirm-template-personal' },
+        ]
+      },
+      {
+        title: '模块 2 · 行李资产', subtitle: '从个人中心进入，只管理跨计划复用的个人行李模板。', module: 'item-library',
+        items: [
+          { label: '个人中心', screen: 'main' },
+          { label: '行李资产', screen: 'templates' },
+          { label: '系统模板详情', screen: 'system-template-detail' },
+          { label: '个人模板详情', screen: 'template-detail' },
+          { label: '编辑个人模板', screen: 'template-detail', modal: 'template-settings' },
+          { label: '新建模板', screen: 'templates', modal: 'new-template' },
+          { label: '空模板', screen: 'template-empty' },
+        ]
+      },
+    ];
 
     function moduleToast(message) {
       const existing = moduleStage.querySelector('.demo-toast');
@@ -2038,13 +2742,14 @@
     function showTopModal() {
       moduleStage.querySelector('.demo-modal-layer')?.remove();
       const top = modalStack[modalStack.length - 1];
-      if (!top) { renderContextNotes('screen', activeModuleScreen); return; }
+      if (!top) { renderContextNotes('screen', activeModuleScreen); updateDynamicNav(); return; }
       const module = currentModule();
       const layer = document.createElement('div');
       layer.className = 'demo-modal-layer';
       layer.innerHTML = module.modals[top.id];
       moduleStage.appendChild(layer);
       renderContextNotes('modal', top.id, top.noteId);
+      updateDynamicNav();
     }
 
     function openModuleModal(modalId, noteId = modalId) {
@@ -2077,27 +2782,46 @@
           ? '选择后将确认添加到所有成员的共同行李'
           : '选择后将确认加入你的个人行李';
       }
-      moduleFlow.innerHTML = module.flow.map((step, index) =>
-        `<div class="module-flow-step">${step}</div>${index < module.flow.length - 1 ? '<div class="module-flow-arrow">→</div>' : ''}`
-      ).join('');
       renderContextNotes('screen', activeModuleScreen);
-      Array.from(moduleTabs.querySelectorAll('.module-tab')).forEach(button => {
-        const active = button.dataset.module === module.id;
+      updateDynamicNav();
+    }
+
+    function updateDynamicNav() {
+      dynamicPageNav.querySelectorAll('button').forEach(button => {
+        const active = button.dataset.module === activeModuleId
+          && button.dataset.screen === activeModuleScreen
+          && (!button.dataset.modal || modalStack.at(-1)?.id === button.dataset.modal);
         button.classList.toggle('active', active);
-        button.setAttribute('aria-selected', String(active));
       });
     }
 
-    MODULE_DEMOS.forEach(module => {
-      const button = document.createElement('button');
-      button.type = 'button';
-      button.className = 'module-tab';
-      button.dataset.module = module.id;
-      button.setAttribute('role', 'tab');
-      button.textContent = module.name;
-      button.addEventListener('click', () => renderModule(module.id));
-      moduleTabs.appendChild(button);
+    dynamicPageNav.innerHTML = DEMO_NAV_GROUPS.map(group => `
+      <section><h3>${group.title}</h3>${group.items.map(item => `<button type="button" data-module="${group.module}" data-screen="${item.screen}" ${item.modal ? `data-modal="${item.modal}"` : ''} ${item.returnScreen ? `data-return-screen="${item.returnScreen}"` : ''}><span>${item.label}</span><i>›</i></button>`).join('')}</section>
+    `).join('');
+    dynamicPageNav.addEventListener('click', event => {
+      const button = event.target.closest('button[data-module]');
+      if (!button) return;
+      if (button.dataset.returnScreen) planReturnScreen = button.dataset.returnScreen;
+      renderModule(button.dataset.module, button.dataset.screen);
+      if (button.dataset.modal) openModuleModal(button.dataset.modal);
+      updateDynamicNav();
     });
+
+    function staticNotes(module, item) {
+      const isModal = Boolean(item.modal);
+      const notes = isModal ? (module.modal_notes?.[item.modal] || []) : (module.screen_notes?.[item.screen] || []);
+      return notes.map(note => `<li class="${note[2] === 'system' ? 'system' : ''}"><b>${note[0]}</b><span>${note[1]}</span></li>`).join('');
+    }
+
+    function renderStaticPages() {
+      staticPages.innerHTML = STATIC_FLOWS.map(flow => {
+        const module = MODULE_DEMOS.find(item => item.id === flow.module);
+        return `<section class="static-module-row"><header><small>${flow.title}</small><h3>${module.name}</h3><p>${flow.subtitle}</p></header><div class="static-flow">${flow.items.map((item, index) => `
+          <article class="static-page-unit"><div class="static-page-label"><span>页面 ${index + 1}</span><b>${item.label}</b></div><div class="static-phone"><div class="module-stage">${module.screens[item.screen] || ''}${item.modal ? `<div class="demo-modal-layer">${module.modals[item.modal] || ''}</div>` : ''}</div></div><ul class="static-page-notes">${staticNotes(module, item)}</ul></article>${index < flow.items.length - 1 ? '<div class="static-arrow">→</div>' : ''}
+        `).join('')}</div></section>`;
+      }).join('');
+    }
+    renderStaticPages();
 
     moduleStage.addEventListener('click', event => {
       const control = event.target.closest('[data-module-action]');
@@ -2108,7 +2832,8 @@
         return;
       }
       if (action === 'open-plan-picker') {
-        planReturnScreen = activeModuleScreen === 'public' ? 'public' : 'mine';
+        planReturnScreen = control.dataset.scope || (activeModuleScreen === 'public' ? 'public' : 'mine');
+        planAddSource = control.dataset.source || (control.dataset.screen === 'template-picker' ? 'template' : 'library');
         renderModule('plan-list', control.dataset.screen);
         return;
       }
@@ -2127,11 +2852,34 @@
         return;
       }
       if (action === 'save-plan-library') {
-        openModuleModal(planReturnScreen === 'public' ? 'confirm-library-shared' : 'confirm-library-personal');
+        if (planReturnScreen === 'public') {
+          planAddSource = 'library';
+          renderModule('plan-list', 'shared-edit-list');
+        } else {
+          renderModule('plan-list', 'mine');
+          moduleToast('已加入个人行李');
+        }
         return;
       }
-      if (action === 'use-plan-template') {
-        openModuleModal(planReturnScreen === 'public' ? 'confirm-template-shared' : 'confirm-template-personal');
+      if (action === 'toggle-plan-template') {
+        control.classList.toggle('selected');
+        const selected = Array.from(moduleStage.querySelectorAll('[data-module-action="toggle-plan-template"].selected'))
+          .reduce((sum, item) => sum + Number(item.dataset.itemCount || 1), 0);
+        const count = moduleStage.querySelector('[data-template-selected]');
+        const save = moduleStage.querySelector('[data-module-action="save-plan-template"]');
+        if (count) count.textContent = String(selected);
+        if (save) save.disabled = selected === 0;
+        return;
+      }
+      if (action === 'save-plan-template' || action === 'use-plan-template') {
+        if (planReturnScreen === 'public') {
+          planAddSource = 'template';
+          renderModule('plan-list', 'shared-edit-list');
+        } else openModuleModal('confirm-template-personal');
+        return;
+      }
+      if (action === 'save-shared-edit-list') {
+        openModuleModal(planAddSource === 'template' ? 'confirm-template-shared' : 'confirm-library-shared');
         return;
       }
       if (action === 'open-module') {
@@ -2170,9 +2918,9 @@
         return;
       }
       if (action === 'confirm-plan-add') {
-        const shared = modalStack.at(-1)?.id.endsWith('shared') || Boolean(moduleStage.querySelector('[data-confirm-share].on'));
+        const shared = modalStack.at(-1)?.id.endsWith('shared') || activeModuleScreen === 'shared-edit-list';
         modalStack = [];
-        renderModule('plan-list', shared ? 'public' : planReturnScreen);
+        renderModule('plan-list', 'mine');
         moduleToast(shared ? '已添加到所有成员的共同行李' : '已加入你的个人行李');
         return;
       }
@@ -2369,7 +3117,7 @@
         if (button) button.disabled = !input.value.trim();
       }
     });
-    renderModule(activeModuleId);
+    renderModule(activeModuleId, 'mine');
 
     const buttons = Array.from(document.querySelectorAll('.filter-btn'));
     const rows = Array.from(document.querySelectorAll('#feedback-body tr'));
