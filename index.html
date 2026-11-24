@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>行李清单重构方案 V2.0</title>
+  <title>行李清单体验 Demo</title>
   <style>
     :root {
       --ink: #202326;
@@ -1373,14 +1373,14 @@
     /* V2 review canvas: content expands naturally; only the browser scrolls. */
     html { overflow: auto; }
     body { min-width: 100%; overflow: visible; }
-    .shell { width: max-content; min-width: 100%; max-width: none; padding: 22px 28px 64px; }
-    .masthead { width: 1184px; max-width: calc(100vw - 56px); padding: 20px 26px; border-radius: 8px; }
+    .shell { width: max-content; min-width: 100%; max-width: none; padding: 22px 16px 64px; }
+    .masthead { width: 1184px; max-width: calc(100vw - 32px); padding: 20px 26px; border-radius: 8px; }
     .masthead::after { display: none; }
     .masthead h1 { margin: 0; max-width: none; font-size: 25px; line-height: 1.25; }
-    .main-tabs { width: 1184px; max-width: calc(100vw - 56px); margin-top: 12px; }
+    .main-tabs { width: 1184px; max-width: calc(100vw - 32px); margin-top: 12px; }
     .panel-intro { padding: 24px 0 14px; }
     .panel-intro h2 { margin: 0; font-size: 23px; }
-    .module-demo-layout { display: grid !important; grid-template-columns: 210px 390px 520px !important; gap: 24px; width: max-content; justify-content: start !important; }
+    .module-demo-layout { display: grid !important; grid-template-columns: 210px 390px 520px !important; gap: 18px; width: max-content; justify-content: start !important; }
     .dynamic-page-nav { position: static; display: grid !important; width: 210px; max-height: none; overflow: visible !important; padding: 0; }
     .dynamic-page-nav section { width: 210px; }
     .module-phone-wrap { position: static; width: 390px; max-width: none; margin: 0; filter: drop-shadow(0 20px 34px rgba(22,30,35,.13)); }
@@ -1828,7 +1828,7 @@
     }
     .luggage-name-quantity-row .quantity-field .gooh-stepper b { align-self: center; text-align: center; }
 
-    /* B option: one add flow, with sharing configured per item. */
+    /* Unified add flow with sharing configured per item. */
     .triple-add-dock {
       position: sticky;
       bottom: -18px;
@@ -1854,29 +1854,333 @@
     .item-share-setting b { display: block; }
     .item-share-setting .demo-switch { flex: 0 0 38px; }
     .conditional-carrier[hidden] { display: none !important; }
+    .luggage-name-quantity-row:has(.quantity-field[hidden]) { grid-template-columns: 1fr; }
+    .inline-carry-setting { display: block !important; padding: 12px 0 4px; border-top: 1px solid #edf0f1; }
+    .inline-carry-setting > b { display: block; margin-bottom: 9px; font-size: 10px; }
+    .inline-carry-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
+    .inline-carry-tabs button { min-height: 36px; color: #56646c; background: #f3f5f6; border: 1px solid #e5e9eb; border-radius: 7px; font-size: 10px; }
+    .inline-carry-tabs button.selected { color: #147daa; background: #e8f7fd; border-color: #40b8ed; font-weight: 700; }
+    .all-carry-count, .member-carry-counts > div { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 42px; }
+    .member-carry-counts { margin-top: 6px; }
+    .member-carry-counts > div + div { border-top: 1px solid #edf0f1; }
+    .inline-carry-setting .gooh-stepper { flex: 0 0 104px; justify-content: space-between; }
+    .inline-carry-setting .gooh-stepper button { width: 28px; height: 28px; }
+    .inline-carry-setting .gooh-stepper b { min-width: 20px; text-align: center; }
+    .personal-quantity[hidden], .quantity-field[hidden], .all-carry-count[hidden], .member-carry-counts[hidden] { display: none !important; }
+    .shared-edit-list article > .inline-carry-setting { display: block !important; }
     .batch-source-note { margin: 10px 0 0; color: #748188; font-size: 9px; }
-    .share-change-warning { margin: 0 14px 14px; padding: 12px 13px; background: #fff7e9; border-left: 3px solid #d39a35; border-radius: 0 9px 9px 0; }
-    .share-change-warning b,
-    .share-change-warning span { display: block; }
-    .share-change-warning b { font-size: 11px; }
-    .share-change-warning span { margin-top: 4px; color: #59656c; font-size: 9px; line-height: 1.55; }
-    .duplicate-name-list { margin: 10px 14px 14px; padding: 0; list-style: none; border-top: 1px solid #e8ecee; }
-    .duplicate-name-list li { display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 40px; border-bottom: 1px solid #e8ecee; font-size: 10px; }
-    .duplicate-name-list li::after { content: '将合并'; color: #b77718; font-size: 9px; font-weight: 700; }
+    .simple-template-list { margin-top: 14px; overflow: hidden; background: #fff; border: 1px solid #e5e9eb; border-radius: 12px; }
+    .simple-template-list > div { display: grid; grid-template-columns: minmax(0, 1fr) 42px; align-items: center; min-height: 52px; border-bottom: 1px solid #edf0f1; }
+    .simple-template-list > div:last-child { border-bottom: 0; }
+    .simple-template-list .template-name { grid-column: 1; height: 100%; padding: 0 14px; color: #202326; background: transparent; border: 0; text-align: left; font-size: 12px; font-weight: 700; }
+    .simple-template-list > div:not(:has(.template-edit-icon)) .template-name { grid-column: 1 / -1; }
+    .template-edit-icon { display: grid; place-items: center; width: 30px; height: 30px; color: #168fc8; background: #e8f7fd; border: 0; border-radius: 50%; font-size: 13px; }
+    .carry-mode-choice { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 8px 14px 14px; }
+    .carry-mode-choice button { min-height: 72px; padding: 11px; color: #202326; background: #f4f6f7; border: 1px solid transparent; border-radius: 10px; text-align: left; }
+    .carry-mode-choice button.selected { background: #e8f7fd; border-color: #40b8ed; }
+    .carry-mode-choice b,
+    .carry-mode-choice span { display: block; }
+    .carry-mode-choice span { margin-top: 4px; color: #69747a; font-size: 8px; }
+    .carry-custom-members { margin-top: 0 !important; }
+    .inline-carrier-list { border-top: 1px solid #e8eef1; background: #f8fbfc; }
+    .inline-carrier-list > span { display: grid; grid-template-columns: 28px 1fr auto; align-items: center; gap: 8px; min-height: 44px; padding: 6px 12px; border-bottom: 1px solid #edf1f2; }
+    .inline-carrier-list > span:last-child { border-bottom: 0; }
+    .inline-carrier-list i { display: grid; place-items: center; width: 26px; height: 26px; color: #fff; background: #293238; border-radius: 50%; font-size: 8px; font-style: normal; }
+    .inline-carrier-list b { font-size: 10px; }
+    .inline-carrier-list em { color: #168fc8; font-size: 9px; font-style: normal; }
+    .inline-carrier-list button { padding: 5px 8px; color: #168fc8; background: #e8f7fd; border: 0; border-radius: 7px; font-size: 8px; }
+    .empty-inline-action { margin-top: 16px; min-width: 142px; min-height: 40px; padding: 0 16px; color: #fff; background: #202326; border: 0; border-radius: 21px; font-size: 10px; font-weight: 700; }
+
+    .checklist-summary-row { display: flex; align-items: center; justify-content: space-between; min-height: 44px; margin: 10px 0 8px; color: #747e84; }
+    .checklist-summary-row span { font-size: 12px; font-weight: 700; }
+    .checklist-summary-row b { margin: 0 3px; color: #2aaeea; font-size: 17px; }
+    .checklist-summary-row button { display: grid; place-items: center; width: 34px; height: 34px; color: #2aaeea; background: transparent; border: 0; border-radius: 8px; font-size: 19px; letter-spacing: 0; }
+    .weather-recommendation { display: grid; grid-template-columns: 30px minmax(0, 1fr) auto 24px; align-items: center; gap: 8px; margin-bottom: 12px; padding: 11px 10px; background: #fff; border: 1px solid #e7ebed; border-radius: 12px; box-shadow: 0 5px 16px rgba(30, 42, 48, .05); }
+    .weather-recommendation > i { display: grid; place-items: center; width: 28px; height: 28px; color: #168fc8; background: #e8f7fd; border-radius: 8px; font-size: 14px; font-style: normal; }
+    .weather-recommendation span { min-width: 0; color: #3e474c; font-size: 10px; font-weight: 700; line-height: 1.35; }
+    .weather-recommendation .weather-action { padding: 5px 3px; color: #168fc8; background: transparent; border: 0; font-size: 10px; font-weight: 700; white-space: nowrap; }
+    .weather-recommendation .weather-close { display: grid; place-items: center; width: 22px; height: 22px; color: #a9b1b5; background: transparent; border: 0; font-size: 15px; }
+    .carry-mode-choice { grid-template-columns: 1fr; gap: 0; padding: 2px 14px 0; background: #fff; }
+    .carry-mode-choice button { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; min-height: 68px; padding: 12px 4px; background: #fff; border: 0; border-bottom: 1px solid #edf0f1; border-radius: 0; }
+    .carry-mode-choice button.selected { background: #fff; border-color: #edf0f1; }
+    .carry-mode-choice button.selected::after { content: "✓"; display: grid; place-items: center; width: 20px; height: 20px; color: #fff; background: #2aaeea; border-radius: 50%; font-size: 11px; }
+    .carry-mode-choice button:not(.selected)::after { content: ""; width: 18px; height: 18px; border: 1px solid #c9d0d3; border-radius: 50%; }
+    .carry-mode-choice .carry-choice-copy { min-width: 0; }
+    .carry-mode-choice .carry-choice-copy b { font-size: 12px; }
+    .carry-mode-choice .carry-choice-copy > span { margin-top: 3px; font-size: 9px; }
+    .carry-member-preview { display: flex !important; align-items: center; gap: 7px; margin-top: 7px !important; color: #5d686e !important; }
+    .carry-avatar-stack { display: flex !important; margin: 0 !important; }
+    .carry-avatar-stack i { display: grid; place-items: center; width: 21px; height: 21px; margin-left: -5px; color: #fff; background: #54656d; border: 2px solid #fff; border-radius: 50%; font-size: 7px; font-style: normal; }
+    .carry-avatar-stack i:first-child { margin-left: 0; background: #2aaeea; }
+    .carry-avatar-stack i:last-child { background: #df9c56; }
+    .carry-custom-members { margin: 0 14px 10px; padding: 4px 10px; background: #f7f9fa; border-radius: 10px; }
+    .carrier-selected-summary { display: flex; align-items: center; gap: 7px; margin-top: 3px; }
+    .carrier-selected-summary .carry-avatar-stack { flex: 0 0 auto; }
+    .carrier-selected-summary .carry-avatar-stack i { width: 19px; height: 19px; font-size: 6px; }
+    .carrier-selected-summary b { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .checklist-tabs { display: flex; align-items: center; justify-content: flex-start; gap: 8px; margin: 8px 0 11px; }
+    .checklist-tabs button { flex: 0 0 auto; width: auto; min-height: 32px; padding: 0 14px; color: #657078; background: #fff; border: 1px solid #dce2e5; border-radius: 16px; font-size: 11px; font-weight: 700; }
+    .checklist-tabs button.selected { color: #fff; background: #2aaeea; border-color: #2aaeea; box-shadow: 0 3px 10px rgba(42,174,234,.2); }
+    .single-plan-badge { display: inline-flex; align-items: center; min-height: 24px; margin: 2px 0 8px; padding: 0 9px; color: #168fc8; background: #e8f7fd; border-radius: 12px; font-size: 9px; font-weight: 700; }
+    .template-management-list { display: grid; gap: 10px; margin-top: 14px; }
+    .template-management-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; min-height: 68px; overflow: hidden; background: #fff; border: 2px solid #c8f1fa; border-radius: 14px; }
+    .template-management-row .template-name { width: 100%; min-height: 64px; padding: 0 16px; color: #202326; text-align: left; background: transparent; border: 0; font-size: 14px; font-weight: 700; }
+    .template-management-row .template-edit-icon { margin-right: 12px; color: #2aaeea; background: transparent; border-radius: 8px; font-size: 16px; }
+    .template-category-list { display: grid; gap: 10px; margin-top: 14px; padding-bottom: 76px; }
+    .template-category-card { overflow: hidden; background: #c9f4fb; border: 1px solid #bcecf5; border-radius: 14px; }
+    .template-category-card header { display: flex; align-items: center; gap: 9px; min-height: 54px; padding: 0 14px; }
+    .template-category-card header i { color: #8b979d; font-size: 15px; font-style: normal; }
+    .template-category-card header b { font-size: 13px; }
+    .template-category-items { padding: 0 14px; background: #fff; }
+    .template-category-items button,
+    .template-category-items div { display: flex; align-items: center; justify-content: space-between; width: 100%; min-height: 54px; padding: 0; color: #202326; text-align: left; background: transparent; border: 0; border-bottom: 1px solid #edf0f1; font-size: 12px; font-weight: 700; }
+    .template-category-items > :last-child { border-bottom: 0; }
+    .template-category-items i { color: #a3acb1; font-style: normal; }
+    .template-add-dock { position: sticky; z-index: 8; bottom: -18px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 7px; flex: 0 0 auto; margin: auto -14px -18px; padding: 11px 14px 17px; background: rgba(255,255,255,.97); border-top: 1px solid #e6eaec; box-shadow: 0 -8px 20px rgba(25, 39, 46, .06); backdrop-filter: blur(12px); }
+    .template-add-dock button { display: grid; grid-template-rows: 25px auto; place-items: center; gap: 3px; min-width: 0; min-height: 50px; color: #687278; background: transparent; border: 0; border-radius: 10px; font-size: 9px; font-weight: 700; }
+    .template-add-dock button i { display: grid; place-items: center; width: 27px; height: 27px; color: #168fc8; background: #e8f7fd; border-radius: 8px; font-style: normal; font-size: 13px; }
+    .template-add-dock button.primary { color: #fff; background: #202326; }
+    .template-add-dock button.primary i { color: #fff; background: transparent; }
+
+    /* Static page IA: an always-visible text flow with page previews below each node. */
+    .static-flowchart { display: grid; gap: 22px; width: max-content; }
+    .flow-lane { width: max-content; padding: 18px; background: #f7f9fa; border: 1px solid #e4e9eb; border-radius: 12px; }
+    .flow-lane > header { display: flex; align-items: baseline; gap: 10px; margin-bottom: 13px; }
+    .flow-lane > header b { font-size: 14px; }
+    .flow-lane > header span { color: #778188; font-size: 11px; }
+    .flow-path { display: flex; align-items: flex-start; gap: 18px; width: max-content; overflow: visible; padding: 2px 2px 8px; }
+    .flow-path-arrow { position: relative; flex: 0 0 56px; display: grid; place-items: center; min-height: 94px; color: #849097; font-size: 16px; }
+    .flow-path-arrow span { position: absolute; margin-top: -34px; padding: 2px 6px; color: #168fc8; background: #e8f7fd; border-radius: 8px; font-size: 9px; font-weight: 700; white-space: nowrap; }
+    .flow-node { flex: 0 0 360px; width: 360px; min-width: 0; }
+    .flow-node-label { min-height: 92px; padding: 13px 14px; background: #fff; border: 1px solid #dfe5e8; border-radius: 10px; box-shadow: 0 3px 10px rgba(24,32,36,.04); }
+    .flow-node.is-start .flow-node-label { border-color: #8dd9f5; box-shadow: 0 0 0 2px #e8f7fd; }
+    .flow-node-label small, .flow-node-label b, .flow-node-label span { display: block; }
+    .flow-node-label small { color: #168fc8; font-size: 9px; font-weight: 700; }
+    .flow-node-label b { margin-top: 6px; font-size: 14px; }
+    .flow-node-label span { margin-top: 4px; color: #6c777d; font-size: 10px; line-height: 1.4; }
+    .flow-node-preview { padding-top: 14px; }
+    .flow-node-preview .static-phone { width: 360px; margin: 0; }
+    .flow-node-preview .static-page-notes { padding: 0 5px; }
+    .flow-node.is-reused { opacity: .38; filter: grayscale(.35) saturate(.3); }
+    .flow-node.is-reused .static-page-notes { display: none; }
+    .reuse-label { display: inline-flex !important; width: fit-content; margin-top: 7px !important; padding: 2px 7px; color: #6f7b81 !important; background: #edf0f1; border-radius: 8px; font-size: 9px !important; font-weight: 700; }
+    .flow-legend { display: flex; gap: 14px; flex-wrap: wrap; margin: -3px 0 15px; color: #788389; font-size: 11px; }
+    .flow-legend span::before { content: ""; display: inline-block; width: 9px; height: 9px; margin-right: 5px; vertical-align: -1px; background: #fff; border: 1px solid #dfe5e8; border-radius: 3px; }
+    .flow-legend span:first-child::before { border-color: #2aaeea; box-shadow: 0 0 0 2px #e8f7fd; }
+    .flow-legend span:last-child::before { opacity: .38; background: #cbd1d4; }
+    .static-pages { width: max-content; }
+    .static-module-row { width: max-content; overflow: visible; }
+
+    /* V3: three independent modules with compact, shared-start branch diagrams. */
+    .static-pages { gap: 34px; }
+    .static-module-row {
+      min-width: max(1160px, calc(100vw - 56px));
+      padding: 28px;
+      border-radius: 8px;
+      box-shadow: 0 8px 28px rgba(28, 39, 45, .05);
+    }
+    .static-module-row:nth-child(1) { border-top: 5px solid #168fc8; }
+    .static-module-row:nth-child(2) { border-top: 5px solid #16856b; }
+    .static-module-row:nth-child(3) { border-top: 5px solid #a26714; }
+    .static-module-row > header { grid-template-columns: 110px auto 1fr; align-items: center; margin-bottom: 22px; }
+    .static-module-row > header small { grid-column: auto; align-self: center; width: fit-content; padding: 4px 8px; color: #fff; background: #168fc8; border-radius: 3px; font-size: 10px; }
+    .static-module-row:nth-child(2) > header small { background: #16856b; }
+    .static-module-row:nth-child(3) > header small { background: #a26714; }
+    .static-module-row > header h3 { font-size: 24px; }
+    .static-module-row > header p { max-width: 660px; }
+    .static-flowchart { display: grid; gap: 14px; width: 100%; }
+    .branch-flow-group { width: 100%; padding: 18px 20px 20px; background: #f6f8f9; border: 1px solid #e1e6e8; border-radius: 6px; }
+    .branch-flow-group > header { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
+    .branch-flow-group > header > span { display: grid; place-items: center; width: 28px; height: 28px; color: #fff; background: #202326; border-radius: 4px; font-size: 10px; font-weight: 800; }
+    .branch-flow-group > header div { display: flex; align-items: baseline; gap: 10px; }
+    .branch-flow-group > header b { font-size: 14px; }
+    .branch-flow-group > header small { color: #6f7a80; font-size: 11px; }
+    .branch-flow-canvas { display: grid; grid-template-columns: 168px 34px max-content; align-items: stretch; width: max-content; min-width: 100%; }
+    .branch-start { position: relative; display: grid; align-items: center; }
+    .branch-start::after { content: ""; position: absolute; left: 100%; width: 34px; height: 2px; background: #96a2a8; }
+    .branch-rail { position: relative; width: 34px; }
+    .branch-rail::before { content: ""; position: absolute; top: 32px; bottom: 32px; left: 33px; width: 2px; background: #96a2a8; }
+    .branch-list { display: grid; gap: 10px; }
+    .branch-row { position: relative; display: flex; align-items: center; min-height: 64px; }
+    .branch-row::before { content: ""; flex: 0 0 18px; width: 18px; height: 2px; background: #96a2a8; }
+    .branch-name { flex: 0 0 106px; padding: 0 12px 0 10px; color: #59656b; font-size: 10px; font-weight: 700; line-height: 1.35; }
+    .compact-flow-node { display: grid; align-content: center; flex: 0 0 168px; width: 168px; min-height: 62px; padding: 9px 11px; background: #fff; border: 1px solid #d9e0e3; border-radius: 5px; box-shadow: 0 2px 7px rgba(24,32,36,.04); }
+    .compact-flow-node small, .compact-flow-node b, .compact-flow-node span { display: block; }
+    .compact-flow-node small { color: #168fc8; font-size: 9px; font-weight: 700; }
+    .compact-flow-node b { margin-top: 2px; font-size: 12px; line-height: 1.35; }
+    .compact-flow-node span { margin-top: 2px; color: #758087; font-size: 9px; }
+    .compact-flow-node.is-start { color: #fff; background: #202326; border-color: #202326; box-shadow: none; }
+    .compact-flow-node.is-start small { color: #91d7f6; }
+    .compact-flow-node.is-start span { color: #c8d0d4; }
+    .compact-flow-edge { position: relative; display: grid; place-items: center; flex: 0 0 88px; width: 88px; height: 62px; }
+    .compact-flow-edge i { display: block; width: 100%; height: 2px; background: #96a2a8; }
+    .compact-flow-edge i::after { content: ""; position: absolute; right: 0; top: 28px; width: 7px; height: 7px; border-top: 2px solid #96a2a8; border-right: 2px solid #96a2a8; transform: rotate(45deg); }
+    .compact-flow-edge span { position: absolute; z-index: 1; top: 0; padding: 2px 5px; color: #157fac; background: #e8f7fd; border-radius: 3px; font-size: 9px; font-weight: 700; white-space: nowrap; }
+    .static-preview-section { margin-top: 22px; padding-top: 20px; border-top: 1px solid #dfe5e8; }
+    .static-preview-section > header { display: flex; align-items: baseline; gap: 10px; margin-bottom: 14px; }
+    .static-preview-section > header b { font-size: 15px; }
+    .static-preview-section > header span { color: #758087; font-size: 11px; }
+    .static-preview-strip { display: flex; align-items: flex-start; gap: 20px; width: max-content; }
+    .static-preview-unit { flex: 0 0 300px; width: 300px; }
+    .static-preview-label { display: flex; align-items: center; gap: 9px; min-height: 46px; }
+    .static-preview-label > span { color: #a2abb0; font-size: 10px; font-weight: 800; }
+    .static-preview-label b, .static-preview-label small { display: block; }
+    .static-preview-label b { font-size: 12px; }
+    .static-preview-label small { color: #7a858b; font-size: 9px; }
+    .static-preview-phone.static-phone { width: 300px; height: 650px; min-height: 650px; border-width: 6px; border-radius: 30px; }
+    .static-preview-phone.static-phone .module-stage { width: 128.205%; height: 824px; min-height: 824px; transform: scale(.78); transform-origin: top left; }
+    .static-preview-unit .static-page-notes { padding-inline: 2px; }
+    .static-preview-unit .static-page-notes li { min-height: auto; }
+
+    /* V4: full-size static pages in one simple horizontal sequence per module. */
+    .static-pages { gap: 48px; width: max-content; }
+    .static-module-row {
+      width: max-content;
+      min-width: 0;
+      padding: 28px;
+      overflow: visible;
+    }
+    .static-module-row > header { grid-template-columns: 110px auto minmax(320px, 1fr); }
+    .static-sequence { display: flex; align-items: flex-start; width: max-content; }
+    .static-sequence-page { flex: 0 0 390px; width: 390px; min-width: 390px; }
+    .static-sequence-label { display: flex; align-items: center; gap: 10px; min-height: 58px; padding: 0 2px; }
+    .static-sequence-label > span { flex: 0 0 auto; color: #a0a9ae; font-size: 11px; font-weight: 800; }
+    .static-sequence-label b, .static-sequence-label small { display: block; }
+    .static-sequence-label b { font-size: 14px; line-height: 1.35; }
+    .static-sequence-label small { margin-top: 2px; color: #778188; font-size: 10px; }
+    .static-sequence-page .static-phone {
+      width: 390px;
+      min-width: 390px;
+      max-width: 390px;
+      height: 844px;
+      min-height: 844px;
+      max-height: 844px;
+      margin: 0;
+      border-width: 8px;
+      border-radius: 42px;
+    }
+    .static-sequence-page .static-phone .module-stage {
+      width: 100%;
+      height: 100%;
+      min-height: 0;
+      overflow-x: hidden !important;
+      overflow-y: auto !important;
+      transform: none;
+    }
+    .static-sequence-page .static-page-notes { width: 390px; }
+    .static-sequence-arrow {
+      display: grid;
+      grid-template-rows: auto 26px;
+      place-items: center;
+      flex: 0 0 92px;
+      width: 92px;
+      padding-top: 442px;
+      color: #859097;
+    }
+    .static-sequence-arrow span { max-width: 88px; padding: 3px 6px; color: #157fac; background: #e8f7fd; border-radius: 3px; font-size: 9px; font-weight: 700; line-height: 1.35; text-align: center; }
+    .static-sequence-arrow i { font-size: 24px; font-style: normal; line-height: 1; }
+
+    /* V5: global static rules and the missing collaboration states. */
+    .static-rules { width: min(1180px, calc(100vw - 56px)); margin: 4px 0 34px; padding: 0; background: #fff; border-top: 5px solid #202326; }
+    .static-rules > header { display: flex; align-items: center; gap: 12px; padding: 20px 24px 13px; }
+    .static-rules > header small { padding: 4px 7px; color: #fff; background: #202326; border-radius: 3px; font-size: 10px; font-weight: 800; }
+    .static-rules > header h3 { margin: 0; font-size: 20px; }
+    .static-rules ol { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); margin: 0; padding: 0 24px 24px; list-style: none; }
+    .static-rules li { position: relative; min-width: 0; padding: 16px 18px 10px; border-left: 1px solid #e2e6e8; }
+    .static-rules li:first-child { border-left: 0; }
+    .static-rules li::before { content: counter(list-item, decimal-leading-zero); display: block; margin-bottom: 9px; color: #2aaeea; font-size: 11px; font-weight: 800; }
+    .static-rules b, .static-rules span { display: block; }
+    .static-rules b { font-size: 12px; }
+    .static-rules span { margin-top: 6px; color: #59656b; font-size: 10px; line-height: 1.65; }
+    .batch-conflict-list { margin: 0 14px 12px; padding: 11px 12px; background: #fff4f1; border: 1px solid #f0cbc4; border-radius: 10px; }
+    .batch-conflict-list b, .batch-conflict-list span { display: block; }
+    .batch-conflict-list b { color: #a63f34; font-size: 11px; }
+    .batch-conflict-list span { margin-top: 4px; color: #6b5652; font-size: 9px; }
+    .group-message-preview { margin: 0 14px 12px; padding: 10px 12px; color: #405159; background: #e8f7fd; border-radius: 9px; font-size: 9px; line-height: 1.55; }
+    .group-message-preview b { color: #157fac; }
+    .personal-edit-row b > i { color: #778188; font-size: 10px; font-style: normal; font-weight: 500; }
+    .personal-edit-row b > em { vertical-align: 1px; }
+    .demo-group-head .category-setting { display: grid; place-items: center; width: 28px; height: 28px; margin-left: auto; padding: 0; color: #7b868c; background: transparent; border: 0; border-radius: 8px; font-size: 13px; }
+    .discussion-share-dock { justify-content: flex-end; background: linear-gradient(to top, rgba(255,255,255,.98), rgba(255,255,255,.9)); }
+    .discussion-share-dock .share-discussion-action { display: flex; align-items: center; justify-content: center; gap: 7px; width: 100%; min-height: 48px; color: #fff; background: #202326; border: 0; border-radius: 24px; font-size: 12px; font-weight: 700; }
+    .discussion-share-dock .share-discussion-action i { font-size: 16px; font-style: normal; }
+
+    .add-modal-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 18px 14px 4px; }
+    .add-modal-actions button { min-width: 0; min-height: 44px; border-radius: 8px; font-size: 11px; font-weight: 700; }
+    .add-modal-actions .continue-add { color: #168fc8; background: #fff; border: 1px solid #40b8ed; }
+    .shared-edit-list article:not(:has(.demo-switch.on)) .inline-carry-setting { display: none !important; }
+    .shared-edit-list article:has(.demo-switch.on) .personal-quantity { display: none !important; }
+    .team-card-category { display: block; margin-bottom: 4px; color: #168fc8; font-size: 9px; font-weight: 700; }
+    .team-card-meta { display: flex !important; flex-wrap: wrap; gap: 5px 10px; margin-top: 7px; color: #627078; font-size: 9px; }
+    .team-card-meta strong { color: #33434b; font-weight: 700; }
+    .team-card-quantity { display: block; margin-top: 8px; color: #445158; font-size: 10px; font-weight: 700; }
+    .inline-carrier-list .member-quantity { justify-self: end; color: #445158; font-size: 9px; white-space: nowrap; }
+    .inline-carrier-list .member-status { color: #168fc8; font-size: 9px; white-space: nowrap; }
+    .inline-carrier-list > span { grid-template-columns: 28px minmax(0, 1fr) auto auto; }
+    .team-info-detail { margin: 0 14px 10px; padding: 10px 12px; background: #f8fbfc; border: 1px solid #e5eef1; border-radius: 8px; }
+    .team-info-detail > b, .team-info-detail > small { display: block; }
+    .team-info-detail > small { margin-top: 3px; color: #627078; font-size: 9px; }
+    .team-info-detail .member-line { display: flex; justify-content: space-between; gap: 8px; margin-top: 7px; padding-top: 7px; border-top: 1px solid #e8eef1; font-size: 9px; }
+    .share-matrix .share-category { color: #168fc8 !important; font-size: 9px !important; font-weight: 700; }
+    .share-matrix .share-count { display: block; color: #202326; font-size: 10px; font-weight: 700; }
+    .share-matrix .share-comment { display: block; margin-top: 4px; color: #526169; font-size: 9px; }
+    .template-sort-controls { display: none; align-items: center; gap: 3px; margin-left: auto; }
+    .template-sort-controls button { display: grid; place-items: center; width: 26px; height: 26px; min-height: 26px; padding: 0; color: #168fc8; background: #fff; border: 1px solid #bcecf5; border-radius: 6px; font-size: 13px; }
+    .template-category-list.sorting .template-sort-controls { display: flex; }
+    .template-category-list.sorting .template-category-items > button { pointer-events: none; }
+    .template-category-list.sorting .template-sort-controls button { pointer-events: auto; }
+    .template-category-card > header { gap: 8px; }
+    .template-category-items .template-item-row { display: flex; align-items: center; gap: 8px; border-bottom: 1px solid #edf0f1; }
+    .template-category-items .template-item-row > button:first-child { flex: 1; border-bottom: 0; }
+    .template-category-items .template-item-row .template-sort-controls { flex: 0 0 auto; }
+    .template-category-items .template-item-row .template-sort-controls button { width: 24px; height: 24px; min-height: 24px; }
+    .template-category-items .template-item-row:last-child { border-bottom: 0; }
+    body.review-focus-mode .static-rules,
+    body.review-focus-mode .static-module-row:not(:has(#review-focus)),
+    body.review-focus-mode .static-sequence-page:not(#review-focus),
+    body.review-focus-mode .static-sequence-arrow { display: none !important; }
+    body.review-focus-mode .static-module-row { width: max-content; min-width: 0; }
+    .static-phone .module-stage,
+    .demo-phone .module-stage,
+    .share-matrix-scroll,
+    .discussion-info.long,
+    .demo-modal.gooh-sheet { scrollbar-width: none; }
+    .static-phone .module-stage::-webkit-scrollbar,
+    .demo-phone .module-stage::-webkit-scrollbar,
+    .share-matrix-scroll::-webkit-scrollbar,
+    .discussion-info.long::-webkit-scrollbar,
+    .demo-modal.gooh-sheet::-webkit-scrollbar { display: none; }
 
     @media (max-width: 760px) {
-      .shell { padding: 14px 16px 48px; }
-      .masthead, .main-tabs { max-width: none; width: 1120px; }
+      html, body { overflow-x: hidden; }
+      .shell { width: 100%; min-width: 0; padding: 14px 16px 48px; }
+      .masthead, .main-tabs { width: 100%; max-width: none; }
       .masthead { padding: 18px 22px; }
-      .module-demo-layout { grid-template-columns: 210px 390px 520px !important; }
-      .dynamic-page-nav { display: grid !important; overflow: visible !important; }
+      .main-tabs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .main-tab { min-width: 0; padding-inline: 10px; }
+      .panel-intro { padding-top: 18px; }
+      .module-demo-layout { grid-template-columns: minmax(0, 1fr) !important; width: 100%; gap: 18px; }
+      .dynamic-page-nav { display: flex !important; width: 100%; max-width: 100%; overflow-x: auto !important; padding-bottom: 6px; }
+      .dynamic-page-nav section { flex: 0 0 210px; width: 210px; }
+      .module-phone-wrap { width: min(100%, 390px); max-width: 390px; margin: 0 auto; }
+      .demo-phone { width: 100%; min-width: 0; max-width: 390px; height: auto; min-height: 0; max-height: none; aspect-ratio: 390 / 844; overflow: hidden; }
+      .module-stage, .demo-stage { height: 100%; min-height: 0; overflow-y: auto !important; }
+      .demo-modal, .demo-modal.gooh-sheet, .demo-modal.tall { max-height: 88%; overflow-y: auto; }
+      .module-logic { width: 100%; min-width: 0; }
+      body:has(#panel-static:not([hidden])) { overflow-x: auto; }
+      html:has(#panel-static:not([hidden])) { overflow-x: auto; }
+      body:has(#panel-static:not([hidden])) .shell { width: max-content; min-width: 100%; }
+      .static-rules { width: 1120px; }
+      .static-pages, .static-module-row, .static-flowchart { width: max-content; }
+      .static-module-row { overflow: visible; }
+      .flow-lane { padding: 12px; }
     }
   </style>
 </head>
 <body>
   <main class="shell">
     <header class="masthead">
-      <h1>行李清单重构方案 V2.0</h1>
+      <h1>行李清单体验 Demo</h1>
     </header>
 
     <div class="main-tabs" role="tablist" aria-label="原型查看方式">
@@ -2714,6 +3018,16 @@
       <div class="panel-intro">
         <h2>静态页面</h2>
       </div>
+      <section class="static-rules" aria-labelledby="static-rules-title">
+        <header><small>全局规则</small><h3 id="static-rules-title">行李数据与展示规则</h3></header>
+        <ol>
+          <li><b>数据升级规则</b><span>老版本行李数据升级后，所有成员物品取并集；共享且数量 ≥ 2 的行李升级为团队行李，携带人为“指定成员”，无论指定范围是否包含所有人。</span></li>
+          <li><b>新用户加入规则</b><span>新用户加入计划时，若团队行李的携带人为“所有成员”，则为该用户创建对应的待携带行李。</span></li>
+          <li><b>单人与多人展示规则</b><span>单人计划不展示个人 / 团队切换入口，添加行李不可选择共享，从物品库和模板添加时直接保存；多人计划展示个人 / 团队切换与共享设置。</span></li>
+          <li><b>个人与团队转换规则</b><span>团队行李不可转为个人行李；个人行李可以转为团队行李，转换不可逆。</span></li>
+          <li><b>唯一性判断</b><span>唯一键为“团队 / 个人 + 类别 + 名称”。保存、开启共享及批量提交时均按该组合校验。</span></li>
+        </ol>
+      </section>
       <div id="static-pages" class="static-pages"></div>
     </div>
 
@@ -2957,7 +3271,7 @@
       </div>
     </div>
 
-    <footer class="footer">Gooh 行李清单重构体验 Demo · 动态交互与静态流程页面</footer>
+    <footer class="footer">Gooh 行李清单体验 Demo · 动态交互与静态流程页面</footer>
   </main>
   <script>
     const REPORT = {"total": 85, "issueRows": 95, "counts": {"customization": 37, "collaboration": 37, "template": 6, "fixed": 10}, "topicCounts": {"团队范围与各自勾选": 19, "准备检查提醒": 2, "图形化打包互动": 1, "模板叠加与复用": 6, "清单不可见原因不清": 18, "清单导出": 1, "清单编辑保存与团队故障": 10, "清单调整顺序": 1, "物品库与分类自定义": 37}};
@@ -2966,7 +3280,7 @@
     const mainTabs = Array.from(document.querySelectorAll('.main-tab'));
     const mainPanels = Array.from(document.querySelectorAll('.main-panel'));
 
-    function switchMainPanel(panelName) {
+    function switchMainPanel(panelName, scroll = true) {
       mainTabs.forEach(tab => {
         const active = tab.dataset.panel === panelName;
         tab.classList.toggle('active', active);
@@ -2975,10 +3289,11 @@
       mainPanels.forEach(panel => {
         panel.hidden = panel.id !== `panel-${panelName}`;
       });
-      window.scrollTo({ top: document.querySelector('.main-tabs').offsetTop - 8, behavior: 'smooth' });
+      if (scroll) window.scrollTo({ top: document.querySelector('.main-tabs').offsetTop - 8, behavior: 'smooth' });
     }
 
     mainTabs.forEach(tab => tab.addEventListener('click', () => switchMainPanel(tab.dataset.panel)));
+    if (new URLSearchParams(location.search).get('panel') === 'static') switchMainPanel('static', false);
 
     const dynamicPageNav = document.getElementById('dynamic-page-nav');
     const staticPages = document.getElementById('static-pages');
@@ -2989,23 +3304,14 @@
     let modalStack = [];
     let planReturnScreen = 'mine';
     let planAddSource = 'library';
-    let planAddScope = 'mine';
-
-    function currentPlanModuleId() {
-      return activeModuleId === 'plan-list-a' ? 'plan-list-a' : 'plan-list';
-    }
+    let planMode = 'group';
+    let carryScopeSource = null;
 
     const planModule = MODULE_DEMOS.find(item => item.id === 'plan-list');
-    const planModuleA = JSON.parse(JSON.stringify(planModule));
-    planModuleA.id = 'plan-list-a';
-    planModuleA.name = '计划行李 · A 方案';
-    planModuleA.source = '原方案 · 个人与团队分入口';
-    planModuleA.purpose = '保留个人行李与团队行李两个添加入口，用户先确定范围，再从物品库、行李模板或自定义添加。';
-    planModule.name = '计划行李 · B 方案';
-    planModule.source = '新增方案 · 统一入口逐件设置共享';
-    planModule.purpose = '使用统一的添加入口，在新增或批量编辑时逐件设置是否共享及携带人。';
-    MODULE_DEMOS.splice(MODULE_DEMOS.indexOf(planModule), 0, planModuleA);
-    activeModuleId = planModuleA.id;
+    planModule.name = '计划行李';
+    planModule.source = '单人直存 · 多人协作';
+    planModule.purpose = '单人计划直接保存个人行李；多人计划通过个人 / 团队 Tab 管理共享与协作。';
+    activeModuleId = planModule.id;
     const assetModule = MODULE_DEMOS.find(item => item.id === 'item-library');
     function wrapScreenAction(module, screenId, className) {
       const html = module.screens[screenId];
@@ -3016,10 +3322,6 @@
       const action = html.slice(start, end + 9);
       module.screens[screenId] = `${html.slice(0, start)}<div class="single-action-dock">${action}</div>${html.slice(end + 9)}`;
     }
-    [planModuleA, planModule].forEach(module => {
-      wrapScreenAction(module, 'shared-edit-list', 'blue-primary picker-save');
-      wrapScreenAction(module, 'discussion-empty', 'blue-primary template-empty-add');
-    });
     wrapScreenAction(assetModule, 'template-detail', 'gooh-add-button');
     wrapScreenAction(assetModule, 'template-empty', 'blue-primary template-empty-add');
 
@@ -3032,58 +3334,92 @@
       planModule.screens[screenId] = planModule.screens[screenId].replace(/<div class="dual-add-dock">[\s\S]*$/, unifiedAddDock);
     });
     planModule.screens['mine-empty'] = planModule.screens['mine-empty'].replace('可添加个人行李或团队行李开始准备', '可从物品库、行李模板或直接添加行李');
+    const homepageOverview = `<div class="checklist-summary-row"><span>已整理 <b data-progress-label>4 / 7</b> 件物品</span><button title="更多操作" aria-label="更多操作" data-module-action="notify" data-message="已打开行李清单更多操作">•••</button></div>
+      <div class="weather-recommendation"><i>☂</i><span>重庆近日有雨，已为你推荐出行所需</span><button class="weather-action" data-module-action="notify" data-message="已打开天气行李推荐">立即查看</button><button class="weather-close" aria-label="关闭天气推荐" data-module-action="dismiss-weather">×</button></div>`;
+    planModule.screens.mine = planModule.screens.mine.replace(/<section class="overall-progress compact">[\s\S]*?<\/section>/, homepageOverview);
+    planModule.screens['library-picker'] = planModule.screens['library-picker']
+      .replace(/<div class="picker-context" data-picker-context>[\s\S]*?<\/div>/, '')
+      .replace('<button data-module-action="toggle-plan-library">＋</button>', '<button class="selected" data-module-action="toggle-plan-library"></button>')
+      .replace('data-library-selected>0', 'data-library-selected>1')
+      .replace('data-module-action="save-plan-library" disabled', 'data-module-action="save-plan-library"');
 
-    function shareSetting(defaultOn = false) {
-      return `<div class="item-share-setting"><span><b>是否共享</b></span><button class="demo-switch ${defaultOn ? 'on' : ''}" data-module-action="toggle-item-share" aria-label="是否共享"></button></div>
-        <button class="carrier-field conditional-carrier" ${defaultOn ? '' : 'hidden'} data-module-action="open-modal" data-modal="carry-scope"><span><small>携带人</small><b>所有计划成员</b></span><i>›</i></button>`;
+    function carryQuantity(value, min = 0) {
+      return `<div class="gooh-stepper" data-min="${min}"><button data-module-action="step" data-delta="-1" aria-label="减少数量">−</button><b data-count>${value}</b><button data-module-action="step" data-delta="1" aria-label="增加数量">＋</button></div>`;
     }
-    function editCard(name, quantity = 1, duplicateShared = false) {
-      return `<article data-item-name="${name}" ${duplicateShared ? 'data-duplicate-shared="true"' : ''}><header><span><b>${name}</b><em class="added-badge">待添加</em></span><button data-module-action="notify" data-message="已移出待添加列表">移除</button></header>
-        <div><span>数量</span><div class="gooh-stepper"><button data-module-action="step" data-delta="-1">−</button><b data-count>${quantity}</b><button data-module-action="step" data-delta="1">＋</button></div></div>
-        ${shareSetting(false)}</article>`;
+    function shareSetting(defaultOn = false, mode = 'all', locked = false) {
+      return `<div class="item-share-setting"><span><b>是否共享</b></span><button class="demo-switch ${defaultOn ? 'on' : ''}" data-module-action="toggle-item-share" aria-label="是否共享" aria-pressed="${defaultOn}" ${locked ? 'disabled' : ''}></button></div>
+        <div class="inline-carry-setting conditional-carrier" ${defaultOn ? '' : 'hidden'} data-carry-mode="${mode}"><b>携带人处理方式</b><div class="inline-carry-tabs"><button class="${mode === 'all' ? 'selected' : ''}" data-module-action="set-inline-carry-mode" data-mode="all">所有成员</button><button class="${mode === 'custom' ? 'selected' : ''}" data-module-action="set-inline-carry-mode" data-mode="custom">指定成员</button></div><div class="all-carry-count" ${mode === 'all' ? '' : 'hidden'}><span>每人携带数量</span>${carryQuantity(1, 1)}</div><div class="member-carry-counts" ${mode === 'custom' ? '' : 'hidden'}>${['我', '小林', '小周', '小陈'].map(name => `<div><span>${name}</span>${carryQuantity(0)}</div>`).join('')}</div></div>`;
     }
-    function unifiedEditModal(name, defaultOn = false, saveAction = 'save-modal') {
-      return `<div class="demo-modal-backdrop" data-module-action="close-modal"></div><section class="demo-modal gooh-sheet tall"><header><b>编辑行李</b></header><div class="gooh-form"><div class="luggage-name-quantity-row"><label class="name-field"><span>物品名称</span><input maxlength="20" value="${name}"></label><label class="quantity-field"><span>数量</span><div class="gooh-stepper"><button data-module-action="step" data-delta="-1">−</button><b data-count>1</b><button data-module-action="step" data-delta="1">＋</button></div></label></div><label><span>清单类别</span><button data-module-action="open-modal" data-modal="plan-category-picker"><b data-category-value>个人证件</b> ›</button></label>${shareSetting(defaultOn)}</div><div class="gooh-dual-actions"><button class="danger-outline" data-module-action="notify" data-message="已打开删除确认">删除</button><button class="blue-primary" data-module-action="${saveAction}">保存修改</button></div></section>`;
+    function editCard(name, quantity = 1, defaultOn = false, mode = 'all') {
+      return `<article data-item-name="${name}"><header><span><b>${name}</b><em class="added-badge">待添加</em></span><button data-module-action="notify" data-message="已移出待添加列表">移除</button></header>
+        <div class="personal-quantity" ${defaultOn ? 'hidden' : ''}><span>数量</span>${carryQuantity(quantity, 1)}</div>
+        ${shareSetting(defaultOn, mode)}</article>`;
+    }
+    function personalEditModal(name, saveAction = 'save-personal-item') {
+      return `<div class="demo-modal-backdrop" data-module-action="close-modal"></div><section class="demo-modal gooh-sheet tall"><header><b>编辑行李</b></header><div class="gooh-form"><div class="luggage-name-quantity-row"><label class="name-field"><span>物品名称</span><input maxlength="20" value="${name}"></label><label class="quantity-field"><span>数量</span><div class="gooh-stepper"><button data-module-action="step" data-delta="-1">−</button><b data-count>1</b><button data-module-action="step" data-delta="1">＋</button></div></label></div><label><span>清单类别</span><button data-module-action="open-modal" data-modal="plan-category-picker"><b data-category-value>个人证件</b> ›</button></label>${shareSetting(false)}</div><div class="gooh-dual-actions"><button class="danger-outline" data-module-action="notify" data-message="已打开删除确认">删除</button><button class="blue-primary" data-module-action="${saveAction}">保存修改</button></div></section>`;
+    }
+    function teamEditModal(name, isNew = false, mode = 'all') {
+      return `<div class="demo-modal-backdrop" data-module-action="close-modal"></div><section class="demo-modal gooh-sheet tall"><header><b>${isNew ? '添加团队行李' : '编辑团队行李'}</b></header><div class="gooh-form" data-editing-team="${!isNew}"><div class="luggage-name-quantity-row"><label class="name-field"><span>物品名称</span><input maxlength="20" ${isNew ? 'placeholder="请输入名称"' : `value="${name}"`}></label><label class="quantity-field" hidden><span>数量</span>${carryQuantity(1, 1)}</label></div><label><span>清单类别</span><button data-module-action="open-modal" data-modal="plan-category-picker"><b data-category-value>${isNew ? '其他' : '个人证件'}</b> ›</button></label>${shareSetting(true, mode, !isNew)}</div>${isNew ? '<button class="blue-primary full-action" data-module-action="save-team-item">保存行李</button>' : '<div class="gooh-dual-actions"><button class="danger-outline" data-module-action="notify" data-message="已打开删除确认">删除</button><button class="blue-primary" data-module-action="save-team-item">保存修改</button></div>'}</section>`;
     }
 
-    planModule.modals['custom-add'] = `<div class="demo-modal-backdrop" data-module-action="close-modal"></div><section class="demo-modal gooh-sheet tall"><header><b>添加行李</b></header><div class="gooh-form"><div class="luggage-name-quantity-row"><label class="name-field"><span>物品名称</span><input maxlength="20" placeholder="请输入名称"></label><label class="quantity-field"><span>数量</span><div class="gooh-stepper"><button data-module-action="step" data-delta="-1">−</button><b data-count>1</b><button data-module-action="step" data-delta="1">＋</button></div></label></div><label><span>清单类别</span><button data-module-action="open-modal" data-modal="plan-category-picker"><b data-category-value>其他</b> ›</button></label>${shareSetting(false)}</div><button class="blue-primary full-action" data-module-action="save-unified-custom">保存行李</button></section>`;
-    planModule.modals['edit-personal'] = unifiedEditModal('身份证', false, 'save-b-edit-personal');
-    planModule.modals['edit-shared'] = unifiedEditModal('护照', true, 'save-b-edit-shared');
-    planModule.modals['confirm-personal-to-shared'] = `<div class="demo-modal-backdrop" data-module-action="close-modal"></div><section class="demo-modal gooh-sheet confirm-sheet"><header><b>确认合并共同行李</b></header><div class="share-change-warning"><b>共同行李中已有“身份证”</b><span>确认后，这件个人行李将与同名共同行李合并，并使用当前设置。</span></div><div class="gooh-dual-actions"><button data-module-action="cancel-share-confirm" data-share-state="on">取消</button><button class="blue-primary" data-module-action="confirm-personal-to-shared">确认合并</button></div></section>`;
-    planModule.modals['confirm-shared-to-personal'] = `<div class="demo-modal-backdrop" data-module-action="close-modal"></div><section class="demo-modal gooh-sheet confirm-sheet"><header><b>确认改为个人行李</b></header><div class="share-change-warning"><b>当前携带人不只有你</b><span>确认后，“护照”会从其他成员的共同行李列表移除，其他成员将不再看到这件行李。</span></div><div class="gooh-dual-actions"><button data-module-action="cancel-share-confirm" data-share-state="off">取消</button><button class="blue-primary" data-module-action="confirm-shared-to-personal">确认修改</button></div></section>`;
-    planModule.modals['confirm-library-share-merge'] = `<div class="demo-modal-backdrop" data-module-action="close-modal"></div><section class="demo-modal gooh-sheet confirm-sheet"><header><b>确认合并同名行李</b></header><div class="share-change-warning"><b>以下行李在共同行李中已存在</b><span>确认后将与同名共同行李合并，并使用本次设置。</span></div><ul class="duplicate-name-list" data-duplicate-list><li>移动电源</li></ul><div class="gooh-dual-actions"><button data-module-action="close-modal">取消</button><button class="blue-primary" data-module-action="confirm-batch-share-merge" data-next="library">确认合并</button></div></section>`;
-    planModule.modals['confirm-template-share-merge'] = `<div class="demo-modal-backdrop" data-module-action="close-modal"></div><section class="demo-modal gooh-sheet confirm-sheet"><header><b>确认合并同名行李</b></header><div class="share-change-warning"><b>以下行李在共同行李中已存在</b><span>确认后将与同名共同行李合并，并使用本次设置。</span></div><ul class="duplicate-name-list" data-duplicate-list><li>冲锋衣</li><li>登山杖</li></ul><div class="gooh-dual-actions"><button data-module-action="close-modal">取消</button><button class="blue-primary" data-module-action="confirm-batch-share-merge" data-next="template">确认合并</button></div></section>`;
-    planModule.modals['confirm-template-apply'] = `<div class="demo-modal-backdrop" data-module-action="close-modal"></div><section class="demo-modal gooh-sheet confirm-sheet"><header><b>确认应用模板</b></header><div class="template-choice"><b>选择应用方式</b><div class="template-choice-grid"><button class="selected" data-module-action="apply-mode" data-mode="merge"><strong>合并</strong><span>保留现有行李，重复项不会再次添加</span></button><button data-module-action="apply-mode" data-mode="replace"><strong>替换</strong><span>清空现有行李后添加本次选择</span></button></div></div><button class="blue-primary full-action" data-module-action="confirm-plan-add">确认合并</button></section>`;
+    planModule.modals['custom-add'] = `<div class="demo-modal-backdrop" data-module-action="close-modal"></div><section class="demo-modal gooh-sheet tall"><header><b>添加行李</b></header><div class="gooh-form"><div class="luggage-name-quantity-row"><label class="name-field"><span>物品名称</span><input maxlength="20" placeholder="请输入名称"></label><label class="quantity-field"><span>数量</span><div class="gooh-stepper"><button data-module-action="step" data-delta="-1">−</button><b data-count>1</b><button data-module-action="step" data-delta="1">＋</button></div></label></div><label><span>清单类别</span><button data-module-action="open-modal" data-modal="plan-category-picker"><b data-category-value>其他</b> ›</button></label>${shareSetting(false)}</div><button class="blue-primary full-action" data-module-action="save-personal-item">保存行李</button></section>`;
+    planModule.modals['edit-personal'] = personalEditModal('身份证');
+    planModule.modals['edit-shared'] = teamEditModal('护照');
+    planModule.modals['custom-add-team'] = teamEditModal('', true);
+    planModule.modals['carry-scope'] = `<div class="demo-modal-backdrop" data-module-action="close-carry-scope"></div><section class="demo-modal gooh-sheet tall"><header><b>选择携带人</b></header><div class="carry-mode-choice"><button class="selected" data-module-action="choose-carry-mode" data-mode="all"><span class="carry-choice-copy"><b>所有成员</b><span>后续加入计划的成员会默认需要携带</span></span></button><button data-module-action="choose-carry-mode" data-mode="custom"><span class="carry-choice-copy"><b>指定成员</b><span class="carry-member-preview"><span class="carry-avatar-stack"><i>我</i><i>林</i><i>周</i></span>我、小林、小周等 3 人</span></span></button></div><div class="gooh-check-list carry-custom-members" hidden><label><span>我</span><input type="checkbox" value="我" checked data-carry-member></label><label><span>小林</span><input type="checkbox" value="小林" checked data-carry-member></label><label><span>小周</span><input type="checkbox" value="小周" checked data-carry-member></label></div><button class="blue-primary full-action" data-module-action="save-carry-scope">保存</button></section>`;
 
-    planModule.screens['library-edit-list'] = `<div class="demo-status"><span>10:30</span><span>● ● ◒</span></div><div class="demo-top"><button data-module-action="screen" data-screen="library-picker">‹</button><span>编辑行李</span><span></span></div><div class="picker-context">逐件确认数量和共享设置</div><p class="batch-source-note">来自物品库 · 2 件</p><div class="shared-edit-list">${editCard('工作证')}${editCard('移动电源', 1, true)}</div><div class="single-action-dock"><button class="blue-primary picker-save" data-module-action="save-library-edit-list">保存 2 件行李</button></div>`;
-    planModule.screens['template-edit-list'] = `<div class="demo-status"><span>10:30</span><span>● ● ◒</span></div><div class="demo-top"><button data-module-action="screen" data-screen="template-picker-detail">‹</button><span>编辑行李</span><span></span></div><div class="picker-context">逐件确认数量和共享设置</div><p class="batch-source-note">来自“户外徒步” · 已选择 12 件</p><div class="shared-edit-list">${editCard('冲锋衣', 1, true)}${editCard('速干衣', 2)}${editCard('登山杖', 1, true)}</div><div class="single-action-dock"><button class="blue-primary picker-save" data-module-action="save-template-edit-list">下一步</button></div>`;
+    planModule.screens['batch-edit-list'] = `<div class="demo-status"><span>10:30</span><span>● ● ◒</span></div><div class="demo-top"><button data-module-action="back-batch-edit">‹</button><span>编辑行李</span><span></span></div><p class="batch-source-note" data-batch-source-note>来自物品库 · 3 件</p><div class="shared-edit-list">${editCard('工作证', 1, true)}${editCard('移动电源')}${editCard('速干衣', 2)}</div><div class="single-action-dock"><button class="blue-primary picker-save" data-module-action="save-batch-edit-list">保存行李</button></div>`;
+    delete planModule.screens['library-edit-list'];
+    delete planModule.screens['template-edit-list'];
 
     Object.assign(planModule.screen_titles, {
-      'library-edit-list': '物品库行李编辑页面',
-      'template-edit-list': '模板行李编辑页面',
+      'batch-edit-list': '批量行李编辑页面',
     });
     planModule.modal_titles['custom-add'] = '添加行李弹窗';
-    planModule.modal_titles['edit-personal'] = '编辑行李弹窗 · 未共享';
-    planModule.modal_titles['edit-shared'] = '编辑行李弹窗 · 已共享';
-    planModule.modal_titles['confirm-personal-to-shared'] = '个人转共享 · 同名合并确认';
-    planModule.modal_titles['confirm-shared-to-personal'] = '共享转个人 · 可见性变更确认';
-    planModule.modal_titles['confirm-library-share-merge'] = '物品库批量共享 · 同名合并确认';
-    planModule.modal_titles['confirm-template-share-merge'] = '模板批量共享 · 同名合并确认';
-    planModule.modal_titles['confirm-template-apply'] = '模板应用方式确认弹窗';
-    planModule.screen_notes['library-edit-list'] = [['来源', '展示本次从物品库选中的行李，保存前逐件编辑。'], ['默认值', '数量沿用物品库默认值；共享默认关闭。'], ['共享设置', '打开共享后显示携带人，默认选择所有当前计划成员。'], ['保存校验', '仅校验本次由私人转为共享的物品；共同行李中存在同名项时，列出名称并要求确认合并。', 'system']];
-    planModule.screen_notes['template-edit-list'] = [['来源', '展示模板物品选择页中已选中的行李。'], ['默认值', '数量沿用模板值；共享默认关闭。'], ['共享设置', '每件行李单独设置；开启后显示携带人，默认选择所有成员。'], ['下一步', '先校验私人转共享的同名项并确认合并，再进入模板合并或替换确认。', 'system']];
-    planModule.screen_notes.mine = [['页面范围', '汇总当前用户需要携带的全部行李，共享状态通过行内标签识别。'], ['底部入口', '固定展示物品库、行李模板、添加行李三个入口，不再先选择个人或团队范围。'], ['共享规则', '每件行李在新增或编辑时独立设置是否共享；关闭时仅自己可见。'], ['完成状态', '每位成员独立维护自己的携带完成状态。', 'system']];
-    planModule.screen_notes['mine-empty'] = [['触发条件', '当前清单没有任何行李时展示。'], ['底部入口', '仍固定展示物品库、行李模板和添加行李三个入口。'], ['共享设置', '选择来源后再逐件设置是否共享，不在入口处区分个人或团队。'], ['恢复', '任一行李保存成功后返回正常清单状态。']];
-    planModule.screen_notes['library-picker'] = [['选择状态', '点击加号选中物品，再次点击取消；底部实时展示已选数量。'], ['保存条件', '至少选择 1 件才可保存；保存后进入通用行李编辑页。'], ['后续编辑', '每件行李可调整数量与共享设置，共享默认关闭。'], ['重复处理', '已在当前清单中的物品标记为“已添加”且不可重复选择。', 'system']];
-    planModule.screen_notes['template-picker-detail'] = [['默认选择', '进入后默认选中模板内全部有效物品，可逐项取消。'], ['保存条件', '至少选择 1 件才可保存；保存后进入通用行李编辑页。'], ['后续编辑', '每件行李可调整数量与共享设置，共享默认关闭。'], ['最终确认', '逐件编辑完成后必须确认合并或替换，默认合并。', 'system']];
-    planModule.modal_notes['custom-add'] = [['字段', '填写名称、数量与类别；标题和保存文案不区分个人或共享行李。'], ['共享默认值', '共享默认关闭，关闭时不展示携带人。'], ['携带人', '开启共享后展示，默认选中所有计划成员，可继续调整。']];
-    planModule.modal_notes['edit-personal'] = [['通用标题', '统一使用“编辑行李”，不通过标题区分个人或共享。'], ['共享状态', '当前示例默认关闭共享；打开后显示携带人并默认选择所有成员。'], ['保存校验', '从个人转为共享时检查共同行李；存在同名项则必须确认合并。', 'system']];
-    planModule.modal_notes['edit-shared'] = [['通用标题', '统一使用“编辑行李”，不通过标题区分个人或共享。'], ['共享状态', '当前示例已开启共享并展示携带人，可关闭或调整成员。'], ['保存校验', '关闭共享且携带人包含其他成员时，必须确认该行李将从其他成员列表移除。', 'system']];
-    planModule.modal_notes['confirm-personal-to-shared'] = [['触发条件', '行李从个人转为共享，且共同行李中存在同名内容。'], ['确认结果', '确认后与同名共同行李合并，并使用当前编辑设置。'], ['取消结果', '取消后返回编辑弹窗，保留用户刚才的字段与共享选择。']];
-    planModule.modal_notes['confirm-shared-to-personal'] = [['触发条件', '行李从共享转为个人，且当前携带人不只有该用户。'], ['影响范围', '确认后从其他成员的共同行李列表移除，其他成员不再可见。'], ['取消结果', '取消后返回编辑弹窗，不提交可见范围变化。']];
-    planModule.modal_notes['confirm-library-share-merge'] = [['校验范围', '只列出本次在物品库编辑页中由私人转为共享且命中同名的行李。'], ['展示内容', '逐项展示将被合并的行李名称，避免只给出笼统提示。'], ['操作结果', '确认后完成合并并保存；取消返回编辑页继续调整。']];
-    planModule.modal_notes['confirm-template-share-merge'] = [['校验范围', '只列出本次在模板编辑页中由私人转为共享且命中同名的行李。'], ['展示内容', '逐项展示将被合并的行李名称。'], ['后续流程', '确认同名合并后，继续进入模板合并或替换确认；取消返回编辑页。']];
-    planModule.modal_notes['confirm-template-apply'] = [['默认方式', '默认合并，保留现有行李并跳过完全重复项。'], ['替换', '替换会清空现有行李后写入本次选择，提交前必须明确确认。'], ['共享设置', '合并或替换均保留上一页逐件配置的共享状态和携带人。']];
+    planModule.modal_titles['custom-add-team'] = '添加团队行李弹窗';
+    planModule.modal_titles['edit-personal'] = '编辑个人行李弹窗';
+    planModule.modal_titles['edit-shared'] = '编辑团队行李弹窗';
+    planModule.screen_notes['batch-edit-list'] = [['保存条件', '名称、类别和数量均有效；开启共享的行李必须选择至少一名携带人。'], ['数据校验', '开启共享前校验同名团队行李；已存在时不允许开启并提示“团队行李已存在”。', 'system'], ['数据变化', '保存前重新校验团队行李数据；冲突时保留当前编辑内容，不写入重复记录。'], ['页面跳转', '保存成功后返回行李清单主页。']];
+    planModule.screen_notes.mine = [['数据变化', '个人和团队行李共用一张携带清单；每位成员独立保存自己的完成状态。'], ['页面跳转', '点击团队行李先打开沟通弹窗，个人行李进入编辑弹窗。']];
+    planModule.screen_notes['mine-empty'] = [['页面跳转', '任一来源保存成功后返回行李清单主页并展示新记录。']];
+    planModule.screen_notes['library-picker'] = [['保存条件', '至少选择 1 件物品；已存在项不可再次添加。'], ['数据变化', '保存时重新校验物品是否已加入，失效项跳过，其余有效项进入批量编辑页。'], ['页面跳转', '保存后进入统一的批量行李编辑页。']];
+    planModule.screen_notes['template-picker-detail'] = [['保存条件', '至少选择 1 件未添加的有效物品。'], ['数据校验', '已加入当前清单的物品保持不可选；保存时按模板最新版本重新校验。', 'system'], ['页面跳转', '保存后进入统一的批量行李编辑页。']];
+    planModule.modal_notes['custom-add'] = [['保存条件', '名称、数量和类别有效；开启共享时携带人至少一名。'], ['数据校验', '开启共享及最终保存时均检查同名团队行李；已存在则阻止保存并提示。', 'system'], ['页面跳转', '保存成功后返回行李清单主页。']];
+    planModule.modal_notes['edit-personal'] = planModule.modal_notes['custom-add'];
+    planModule.modal_notes['edit-shared'] = [['保存条件', '名称、数量、类别有效，且至少保留一名携带人。'], ['数据变化', '团队行李不能改为个人行李；成员调整会同步更新对应携带任务。', 'system'], ['页面跳转', '保存后返回原沟通弹窗或清单。']];
+    planModule.modal_notes['carry-scope'] = [['保存条件', '“所有成员”无需逐项选择；“指定成员”至少选择一名成员。'], ['数据变化', '新增成员的携带状态默认为未完成；移除成员会删除其对应携带任务。']];
+
+    planModule.screens.mine = planModule.screens.mine
+      .replace(/data-modal="edit-shared"/g, 'data-modal="discussion-item-info"')
+      .replace(/<div class="dual-add-dock">[\s\S]*$/, unifiedAddDock);
+    planModule.screens['mine-empty'] = planModule.screens['mine-empty'].replace(/<div class="dual-add-dock">[\s\S]*$/, unifiedAddDock);
+    planModule.screens['template-picker'] = `<div class="demo-status"><span>10:30</span><span>● ● ◒</span></div><div class="demo-top"><button data-module-action="back-plan">‹</button><span>选择行李模板</span><button class="icon-action" title="管理行李模板" aria-label="管理行李模板" data-module-action="open-module" data-module="item-library" data-screen="templates">⚙</button></div><div class="simple-template-list"><div><button class="template-name" data-module-action="screen" data-screen="template-picker-detail">户外徒步</button></div><div><button class="template-name" data-module-action="screen" data-screen="template-picker-detail">城市短途</button></div><div><button class="template-name" data-module-action="screen" data-screen="template-picker-detail">冬季旅行</button></div></div>`;
+    planModule.screens['template-picker-detail'] = `<div class="demo-status"><span>10:30</span><span>● ● ◒</span></div><div class="demo-top"><button data-module-action="screen" data-screen="template-picker">‹</button><span>户外徒步</span><span></span></div><div class="demo-list-group plan-picker-list template-select-list"><div class="demo-group-head"><span>衣物</span><small>模板物品</small></div><div class="picker-disabled"><span><b>冲锋衣</b><small>当前清单中已存在</small></span><em>已添加</em></div><div><span><b>速干衣</b><small>2 件</small></span><button class="selected" data-module-action="toggle-plan-template"></button></div><div class="demo-group-head"><span>装备</span><small>模板物品</small></div><div><span><b>登山杖</b><small>1 件</small></span><button class="selected" data-module-action="toggle-plan-template"></button></div><div class="picker-disabled"><span><b>头灯</b><small>当前清单中已存在</small></span><em>已添加</em></div></div><div class="picker-selection-bar"><span>已选择 <b data-template-selected>2</b> 件</span><button data-module-action="save-plan-template">保存</button></div>`;
+    planModule.screens.discussion = `<div class="demo-status"><span>10:30</span><span>● ● ◒</span></div><div class="demo-top"><button data-module-action="screen" data-screen="mine">‹</button><span>团队行李讨论</span><button class="text-action" data-module-action="screen" data-screen="share-opinions">分享</button></div><div class="discussion-item-list rich"><article><button class="discussion-item-main" data-module-action="open-modal" data-modal="discussion-item-info"><span><span class="discussion-item-title"><b>护照</b><em>2 / 3 已携带</em></span><small>个人证件 · 2 条讨论</small><span class="carry-progress-bar"><i style="width:67%"></i></span></span><i>›</i></button><button class="carrier-list-link" data-module-action="toggle-carriers">展开携带成员⌄</button><div class="inline-carrier-list" hidden><span><i>我</i><b>我</b><em>已完成</em></span><span><i>林</i><b>小林</b><em>已完成</em></span><span><i>周</i><b>小周</b><button data-module-action="notify" data-message="已提醒小周">提醒</button></span></div></article><article><button class="discussion-item-main" data-module-action="open-modal" data-modal="discussion-item-info"><span><span class="discussion-item-title"><b>充电器</b><em>1 / 2 已携带</em></span><small>数码产品 · 1 条讨论</small><span class="carry-progress-bar"><i style="width:50%"></i></span></span><i>›</i></button><button class="carrier-list-link" data-module-action="toggle-carriers">展开携带成员⌄</button><div class="inline-carrier-list" hidden><span><i>我</i><b>我</b><em>已完成</em></span><span><i>林</i><b>小林</b><button data-module-action="notify" data-message="已提醒小林">提醒</button></span></div></article><article><button class="discussion-item-main" data-module-action="open-modal" data-modal="discussion-item-info-empty"><span><span class="discussion-item-title"><b>移动电源</b><em>0 / 1 已携带</em></span><small>数码产品 · 暂无讨论</small><span class="carry-progress-bar"><i style="width:0%"></i></span></span><i>›</i></button><button class="carrier-list-link" data-module-action="toggle-carriers">展开携带成员⌄</button><div class="inline-carrier-list" hidden><span><i>林</i><b>小林</b><button data-module-action="notify" data-message="已提醒小林">提醒</button></span></div></article></div>`;
+    planModule.screens['discussion-empty-single'] = `<div class="demo-status"><span>10:30</span><span>● ● ◒</span></div><div class="demo-top"><button data-module-action="screen" data-screen="mine">‹</button><span>团队行李讨论</span><span></span></div><div class="gooh-empty discussion-empty-page"><i>＋</i><b>邀请成员后开始协作</b><span>当前是单人计划，邀请同行人后可添加团队行李</span><button class="empty-inline-action" data-module-action="notify" data-message="已打开邀请成员">邀请成员</button></div>`;
+    planModule.screens['discussion-empty-group'] = `<div class="demo-status"><span>10:30</span><span>● ● ◒</span></div><div class="demo-top"><button data-module-action="screen" data-screen="mine">‹</button><span>团队行李讨论</span><span></span></div><div class="gooh-empty discussion-empty-page"><i>＋</i><b>还没有团队行李</b><span>添加后可在这里查看成员意见与携带进度</span><button class="empty-inline-action" data-module-action="open-modal" data-modal="custom-add-team">添加团队行李</button></div>`;
+    delete planModule.screens['discussion-empty'];
+    delete planModule.screens['discussion-carriers'];
+    delete planModule.screens['library-picker-empty'];
+    delete planModule.screens['template-picker-empty'];
+    delete planModule.screen_titles['discussion-carriers'];
+    delete planModule.screen_titles['library-picker-empty'];
+    delete planModule.screen_titles['template-picker-empty'];
+    planModule.screen_titles['discussion-empty-single'] = '团队行李空状态 · 单人计划';
+    planModule.screen_titles['discussion-empty-group'] = '团队行李空状态 · 多人计划';
+    planModule.screen_notes['discussion-empty-single'] = [['触发条件', '计划只有当前用户且不存在团队行李。'], ['页面跳转', '邀请成功并产生多人计划后，空状态切换为多人计划引导。']];
+    planModule.screen_notes['discussion-empty-group'] = [['触发条件', '计划已有多名成员但不存在团队行李。'], ['页面跳转', '添加团队行李后返回讨论页并展示新记录。']];
+    planModule.screen_notes.discussion = [['数据变化', '携带进度按已完成成员数 / 当前携带成员数计算，成员调整后立即重算。'], ['页面跳转', '成员列表在当前物品内展开；点击物品主体进入沟通弹窗。'], ['保存条件', '至少存在一条已发表意见时才允许生成分享内容。']];
+    ['shared-edit-list'].forEach(id => {
+      delete planModule.screens[id];
+      delete planModule.screen_titles[id];
+      delete planModule.screen_notes[id];
+    });
+    ['add-source-shared', 'add-source-personal', 'custom-add-shared', 'custom-add-personal', 'confirm-library-shared', 'confirm-template-shared', 'confirm-template-personal'].forEach(id => {
+      delete planModule.modals[id];
+      delete planModule.modal_titles[id];
+      delete planModule.modal_notes[id];
+    });
     planModule.screen_titles['share-opinions'] = '分享团队行李讨论页面';
     planModule.screen_titles['discussion-item-info-empty'] = '团队行李状态 · 暂无评论';
     planModule.screen_notes['share-opinions'] = [
@@ -3142,75 +3478,329 @@
     delete planModule.modal_titles['share-opinions'];
     delete planModule.modal_notes['share-opinions'];
 
-    // Discussion and sharing improvements are common capabilities shared by both plans.
-    planModuleA.screen_titles['share-opinions'] = planModule.screen_titles['share-opinions'];
-    planModuleA.screen_titles['discussion-item-info-empty'] = planModule.screen_titles['discussion-item-info-empty'];
-    planModuleA.screen_notes['share-opinions'] = planModule.screen_notes['share-opinions'];
-    planModuleA.screen_notes['discussion-item-info-empty'] = planModule.screen_notes['discussion-item-info-empty'];
-    planModuleA.screens['share-opinions'] = planModule.screens['share-opinions'];
-    planModuleA.modals['discussion-item-info-empty'] = planModule.modals['discussion-item-info-empty'];
-    planModuleA.modal_titles['discussion-item-info-empty'] = planModule.modal_titles['discussion-item-info-empty'];
-    planModuleA.modal_notes['discussion-item-info-empty'] = planModule.modal_notes['discussion-item-info-empty'];
-    planModuleA.screens.discussion = planModuleA.screens.discussion
-      .replace('data-module-action="open-modal" data-modal="share-opinions"', 'data-module-action="screen" data-screen="share-opinions"')
-      .replace('<article><button class="discussion-item-main" data-module-action="open-modal" data-modal="discussion-item-info"><span><span class="discussion-item-title"><b>移动电源</b>', '<article><button class="discussion-item-main" data-module-action="open-modal" data-modal="discussion-item-info-empty"><span><span class="discussion-item-title"><b>移动电源</b>');
-    delete planModuleA.modals['share-opinions'];
-    delete planModuleA.modal_titles['share-opinions'];
-    delete planModuleA.modal_notes['share-opinions'];
+    assetModule.screens.templates = `<div class="demo-status"><span>10:30</span><span>● ● ◒</span></div><div class="demo-top"><button data-module-action="screen" data-screen="main">‹</button><span>行李模板</span><button class="text-action" data-module-action="open-modal" data-modal="new-template">＋ 新建模板</button></div><div class="simple-template-list"><div><button class="template-name" data-module-action="screen" data-screen="system-template-detail">城市短途</button></div><div><button class="template-name" data-module-action="screen" data-screen="system-template-detail">冬季旅行</button></div><div><button class="template-name" data-module-action="screen" data-screen="template-detail">户外徒步</button><button class="template-edit-icon" title="编辑模板" aria-label="编辑户外徒步模板" data-module-action="open-modal" data-modal="template-settings">✎</button></div><div><button class="template-name" data-module-action="screen" data-screen="template-detail">海边玩水</button><button class="template-edit-icon" title="编辑模板" aria-label="编辑海边玩水模板" data-module-action="open-modal" data-modal="template-settings">✎</button></div></div>`;
+    assetModule.screens['template-detail'] = assetModule.screens['template-detail'].replace(/<div class="template-detail-head">[\s\S]*?<\/div>/, '');
+    assetModule.screens['template-library-picker'] = `<div class="demo-status"><span>10:30</span><span>● ● ◒</span></div><div class="demo-top"><button data-module-action="screen" data-screen="template-detail">‹</button><span>从物品库添加</span><span></span></div><div class="demo-list-group plan-picker-list template-asset-picker"><div class="demo-group-head"><span>个人证件</span><small>物品库</small></div><div class="picker-disabled"><span><b>身份证</b><small>当前模板中已存在</small></span><em>已添加</em></div><div><span><b>工作证</b><small>个人证件</small></span><button class="selected" data-module-action="toggle-template-asset"></button></div><div><span><b>港澳通行证</b><small>个人证件</small></span><button data-module-action="toggle-template-asset">＋</button></div><div class="demo-group-head"><span>数码产品</span><small>物品库</small></div><div class="picker-disabled"><span><b>充电器</b><small>当前模板中已存在</small></span><em>已添加</em></div><div><span><b>移动电源</b><small>数码产品</small></span><button class="selected" data-module-action="toggle-template-asset"></button></div></div><div class="picker-selection-bar"><span>已选择 <b data-template-asset-selected>2</b> 件</span><button data-module-action="save-template-assets">保存</button></div>`;
+    assetModule.screens['template-source-list'] = `<div class="demo-status"><span>10:30</span><span>● ● ◒</span></div><div class="demo-top"><button data-module-action="screen" data-screen="template-detail">‹</button><span>选择行李模板</span><span></span></div><div class="simple-template-list"><div><button class="template-name" data-module-action="screen" data-screen="template-source-picker">城市短途</button></div><div><button class="template-name" data-module-action="screen" data-screen="template-source-picker">冬季旅行</button></div><div><button class="template-name" data-module-action="screen" data-screen="template-source-picker">海边玩水</button></div></div>`;
+    assetModule.screens['template-source-picker'] = `<div class="demo-status"><span>10:30</span><span>● ● ◒</span></div><div class="demo-top"><button data-module-action="screen" data-screen="template-source-list">‹</button><span>城市短途</span><span></span></div><div class="demo-list-group plan-picker-list template-asset-picker"><div class="demo-group-head"><span>个人证件</span><small>模板物品</small></div><div class="picker-disabled"><span><b>身份证</b><small>当前模板中已存在</small></span><em>已添加</em></div><div><span><b>银行卡</b><small>个人证件</small></span><button class="selected" data-module-action="toggle-template-asset"></button></div><div class="demo-group-head"><span>数码产品</span><small>模板物品</small></div><div class="picker-disabled"><span><b>充电器</b><small>当前模板中已存在</small></span><em>已添加</em></div><div><span><b>移动电源</b><small>数码产品</small></span><button class="selected" data-module-action="toggle-template-asset"></button></div></div><div class="picker-selection-bar"><span>已选择 <b data-template-asset-selected>2</b> 件</span><button data-module-action="save-template-assets">保存</button></div>`;
+    assetModule.modals['template-add'] = assetModule.modals['template-add'].replace('data-screen="template-source-picker"', 'data-screen="template-source-list"');
+    assetModule.screen_titles['template-source-list'] = '来源模板选择页';
+    assetModule.screen_notes['template-source-list'] = [['数据校验', '不展示当前模板本身及已删除、无有效物品的模板。'], ['页面跳转', '选择模板后进入该模板的物品选择页。']];
+    assetModule.screen_notes['template-source-picker'] = [['保存条件', '至少选择一件未添加的有效物品。'], ['数据变化', '已存在物品不可选择；保存时按来源模板最新版本重新校验。'], ['页面跳转', '保存成功后返回当前模板详情。']];
+
+    const planAddDock = mode => `<div class="triple-add-dock">
+      <button data-module-action="open-plan-picker" data-screen="library-picker" data-source="library" data-plan-mode="${mode}"><i>▣</i><span>物品库</span></button>
+      <button data-module-action="open-plan-picker" data-screen="template-picker" data-source="template" data-plan-mode="${mode}"><i>▤</i><span>行李模板</span></button>
+      <button class="primary" data-module-action="open-modal" data-modal="${mode === 'single' ? 'custom-add-single' : 'custom-add'}"><i>＋</i><span>添加行李</span></button>
+    </div>`;
+    const checklistTabs = active => `<div class="checklist-tabs" role="tablist" aria-label="行李清单类型">
+      <button class="${active === 'personal' ? 'selected' : ''}" role="tab" aria-selected="${active === 'personal'}" data-module-action="screen" data-screen="mine">个人行李</button>
+      <button class="${active === 'team' ? 'selected' : ''}" role="tab" aria-selected="${active === 'team'}" data-module-action="screen" data-screen="discussion">团队行李</button>
+    </div>`;
+    const categoryHeader = name => `<div class="demo-group-head"><span>${name}</span><button class="category-setting" title="类别设置" aria-label="${name}类别设置">⚙</button></div>`;
+    const personalChecklist = `<div class="demo-list-group">
+      ${categoryHeader('个人证件')}
+      <div class="personal-edit-row"><button data-module-action="open-modal" data-modal="edit-personal"><span><b>身份证 <i>x1</i></b></span></button><button class="carry-check" data-module-action="personal-check">✓</button></div>
+      <div class="personal-edit-row"><button data-module-action="open-modal" data-modal="edit-personal"><span><b>工作证 <i>x1</i></b></span></button><button class="carry-check off" data-module-action="personal-check"></button></div>
+    </div><div class="demo-list-group">${categoryHeader('衣物')}
+      <div class="personal-edit-row"><button data-module-action="open-modal" data-modal="edit-personal"><span><b>速干衣 <i>x2</i></b></span></button><button class="carry-check off" data-module-action="personal-check"></button></div>
+      <div class="personal-edit-row"><button data-module-action="open-modal" data-modal="edit-personal"><span><b>徒步鞋 <i>x1</i></b></span></button><button class="carry-check" data-module-action="personal-check">✓</button></div>
+    </div><div class="demo-list-group">${categoryHeader('数码产品')}
+      <div class="personal-edit-row"><button data-module-action="open-modal" data-modal="edit-personal"><span><b>耳机 <i>x1</i></b></span></button><button class="carry-check" data-module-action="personal-check">✓</button></div>
+    </div>`;
+    const groupChecklist = `<div class="demo-list-group">
+      ${categoryHeader('个人证件')}
+      <div class="personal-edit-row"><button data-module-action="open-modal" data-modal="edit-personal"><span><b>身份证 <i>x1</i></b></span></button><button class="carry-check" data-module-action="personal-check">✓</button></div>
+      <div class="personal-edit-row"><button data-module-action="open-modal" data-modal="discussion-item-info"><span><b>护照 <i>x1</i> <em>团队</em></b></span></button><button class="carry-check" data-module-action="personal-check">✓</button></div>
+      <div class="personal-edit-row"><button data-module-action="open-modal" data-modal="edit-personal"><span><b>工作证 <i>x1</i></b></span></button><button class="carry-check off" data-module-action="personal-check"></button></div>
+    </div><div class="demo-list-group">${categoryHeader('衣物')}
+      <div class="personal-edit-row"><button data-module-action="open-modal" data-modal="edit-personal"><span><b>速干衣 <i>x2</i></b></span></button><button class="carry-check off" data-module-action="personal-check"></button></div>
+      <div class="personal-edit-row"><button data-module-action="open-modal" data-modal="discussion-item-info"><span><b>徒步鞋 <i>x1</i> <em>团队</em></b></span></button><button class="carry-check" data-module-action="personal-check">✓</button></div>
+    </div><div class="demo-list-group">${categoryHeader('数码产品')}
+      <div class="personal-edit-row"><button data-module-action="open-modal" data-modal="discussion-item-info"><span><b>充电器 <i>x2</i> <em>团队</em></b></span></button><button class="carry-check" data-module-action="personal-check">✓</button></div>
+      <div class="personal-edit-row"><button data-module-action="open-modal" data-modal="edit-personal"><span><b>耳机 <i>x1</i></b></span></button><button class="carry-check off" data-module-action="personal-check"></button></div>
+    </div>`;
+
+    planModule.screens['mine-single'] = `<div class="demo-status"><span>10:30</span><span>● ● ◒</span></div><div class="demo-top"><button data-module-action="notify" data-message="已返回计划主页">‹</button><span>单人计划行李状态</span><span></span></div><span class="single-plan-badge">单人计划</span><div class="checklist-summary-row"><span>已整理 <b data-progress-label>3 / 5</b> 件物品</span><button title="更多操作" aria-label="更多操作" data-module-action="notify" data-message="已打开行李清单更多操作">•••</button></div>${personalChecklist.replace(/data-modal="edit-personal"/g, 'data-modal="edit-personal-single"')}${planAddDock('single')}`;
+    planModule.screens.mine = `<div class="demo-status"><span>10:30</span><span>● ● ◒</span></div><div class="demo-top"><button data-module-action="notify" data-message="已返回计划主页">‹</button><span>行李清单</span><span></span></div>${checklistTabs('personal')}<div class="checklist-summary-row"><span>已整理 <b data-progress-label>4 / 7</b> 件物品</span><button title="更多操作" aria-label="更多操作" data-module-action="notify" data-message="已打开行李清单更多操作">•••</button></div><div class="weather-recommendation"><i>☂</i><span>重庆近日有雨，已为你推荐出行所需</span><button class="weather-action" data-module-action="notify" data-message="已打开天气行李推荐">立即查看</button><button class="weather-close" aria-label="关闭天气推荐" data-module-action="dismiss-weather">×</button></div>${groupChecklist}${planAddDock('group')}`;
+    planModule.screens.discussion = planModule.screens.discussion
+      .replace(/<div class="demo-top">[\s\S]*?<\/div>/, '<div class="demo-top"><span></span><span>行李清单</span><span></span></div>' + checklistTabs('team'))
+      .concat('<div class="single-action-dock discussion-share-dock"><button class="share-discussion-action" data-module-action="screen" data-screen="share-opinions"><i>↗</i><span>分享团队行李讨论</span></button></div>');
+    planModule.screens['discussion-empty-group'] = `<div class="demo-status"><span>10:30</span><span>● ● ◒</span></div><div class="demo-top"><span></span><span>行李清单</span><span></span></div>${checklistTabs('team')}<div class="gooh-empty discussion-empty-page"><i>＋</i><b>还没有团队行李</b><span>添加后可在这里查看成员意见与携带进度</span><button class="empty-inline-action" data-module-action="open-modal" data-modal="custom-add-team">添加团队行李</button></div>`;
+    delete planModule.screens['mine-empty'];
+    delete planModule.screens['discussion-empty-single'];
+    delete planModule.screen_titles['mine-empty'];
+    delete planModule.screen_titles['discussion-empty-single'];
+    delete planModule.screen_notes['mine-empty'];
+    delete planModule.screen_notes['discussion-empty-single'];
+    planModule.screen_titles['mine-single'] = '单人计划行李状态';
+    planModule.screen_titles.mine = '行李清单主页 · 多人计划';
+    planModule.screen_notes['mine-single'] = [['页面跳转', '单人计划从物品库或模板选择后直接保存并返回当前清单，不进入批量编辑页。'], ['内容范围', '不展示是否共享、携带人、团队行李或团队讨论入口。']];
+    planModule.screen_notes.mine = [['页面跳转', '个人行李与团队行李通过顶部 Tab 切换；团队 Tab 直接进入团队行李讨论。'], ['数据变化', '多人计划添加行李时可逐件设置共享范围和携带人。']];
+    delete planModule.screens['team-item-detail'];
+    delete planModule.screen_titles['team-item-detail'];
+    delete planModule.screen_notes['team-item-detail'];
+    planModule.modals['custom-add-single'] = `<div class="demo-modal-backdrop" data-module-action="close-modal"></div><section class="demo-modal gooh-sheet tall"><header><b>添加行李</b></header><div class="gooh-form"><div class="luggage-name-quantity-row"><label class="name-field"><span>物品名称</span><input maxlength="20" placeholder="请输入名称"></label><label class="quantity-field"><span>数量</span><div class="gooh-stepper"><button data-module-action="step" data-delta="-1">−</button><b data-count>1</b><button data-module-action="step" data-delta="1">＋</button></div></label></div><label><span>清单类别</span><button data-module-action="open-modal" data-modal="plan-category-picker"><b data-category-value>其他</b> ›</button></label></div><button class="blue-primary full-action" data-module-action="save-single-item">保存行李</button></section>`;
+    planModule.modals['edit-personal-single'] = `<div class="demo-modal-backdrop" data-module-action="close-modal"></div><section class="demo-modal gooh-sheet tall"><header><b>编辑行李</b></header><div class="gooh-form"><div class="luggage-name-quantity-row"><label class="name-field"><span>物品名称</span><input maxlength="20" value="身份证"></label><label class="quantity-field"><span>数量</span><div class="gooh-stepper"><button data-module-action="step" data-delta="-1">−</button><b data-count>1</b><button data-module-action="step" data-delta="1">＋</button></div></label></div><label><span>清单类别</span><button data-module-action="open-modal" data-modal="plan-category-picker"><b data-category-value>个人证件</b> ›</button></label></div><div class="gooh-dual-actions"><button class="danger-outline" data-module-action="notify" data-message="已打开删除确认">删除</button><button class="blue-primary" data-module-action="save-single-item">保存修改</button></div></section>`;
+    planModule.modal_titles['custom-add-single'] = '添加行李弹窗 · 单人计划';
+    planModule.modal_titles['edit-personal-single'] = '编辑行李弹窗 · 单人计划';
+    planModule.modal_notes['custom-add-single'] = [['保存条件', '名称、数量和类别有效即可保存。'], ['页面跳转', '保存成功后直接返回单人行李清单。']];
+    planModule.modal_notes['edit-personal-single'] = planModule.modal_notes['custom-add-single'];
+
+    const templateAddDock = `<div class="template-add-dock">
+      <button data-module-action="screen" data-screen="template-library-picker"><i>▣</i><span>物品库添加</span></button>
+      <button data-module-action="screen" data-screen="template-source-list"><i>▤</i><span>其他模板添加</span></button>
+      <button class="primary" data-module-action="open-modal" data-modal="template-add-custom"><i>＋</i><span>自定义添加</span></button>
+    </div>`;
+    assetModule.screens.templates = `<div class="demo-status"><span>10:30</span><span>● ● ◒</span></div><div class="demo-top"><button data-module-action="screen" data-screen="main">‹</button><span>模板列表</span><span></span></div><div class="template-management-list">
+      <div class="template-management-row"><button class="template-name" data-module-action="screen" data-screen="template-detail">难道你</button><button class="template-edit-icon" title="编辑模板" aria-label="编辑难道你模板" data-module-action="open-modal" data-modal="template-settings">✎</button></div>
+      <div class="template-management-row"><button class="template-name" data-module-action="screen" data-screen="template-detail">徒步清单</button><span></span></div>
+      <div class="template-management-row"><button class="template-name" data-module-action="screen" data-screen="template-detail">露营清单</button><span></span></div>
+      <div class="template-management-row"><button class="template-name" data-module-action="screen" data-screen="template-detail">自驾清单</button><span></span></div>
+      <div class="template-management-row"><button class="template-name" data-module-action="screen" data-screen="template-detail">境外清单</button><span></span></div>
+    </div><div class="single-action-dock"><button class="blue-primary picker-save" data-module-action="open-modal" data-modal="new-template">添加模板</button></div>`;
+    assetModule.screens['template-detail'] = `<div class="demo-status"><span>10:30</span><span>● ● ◒</span></div><div class="demo-top"><button data-module-action="screen" data-screen="templates">‹</button><span>露营清单</span><button class="text-action" data-module-action="open-modal" data-modal="template-settings">编辑</button></div><div class="template-category-list">
+      <section class="template-category-card"><header><i>⌃</i><b>必备（3）</b></header><div class="template-category-items"><button data-module-action="open-modal" data-modal="template-item">帐篷（＋垫子）<i>›</i></button><button data-module-action="open-modal" data-modal="template-item">垫子<i>›</i></button><button data-module-action="open-modal" data-modal="template-item">桌子＋椅子<i>›</i></button></div></section>
+      <section class="template-category-card"><header><i>⌃</i><b>选装（3）</b></header><div class="template-category-items"><button data-module-action="open-modal" data-modal="template-item">床<i>›</i></button><button data-module-action="open-modal" data-modal="template-item">吊床<i>›</i></button><button data-module-action="open-modal" data-modal="template-item">充气沙发<i>›</i></button></div></section>
+      <section class="template-category-card"><header><i>⌃</i><b>炭火 / 卡式炉烧烤（1）</b></header><div class="template-category-items"><button data-module-action="open-modal" data-modal="template-item">炭火 / 卡式炉<i>›</i></button></div></section>
+      <section class="template-category-card"><header><i>⌃</i><b>火锅 / 其他（1）</b></header><div class="template-category-items"><button data-module-action="open-modal" data-modal="template-item">卡式炉<i>›</i></button></div></section>
+    </div>${templateAddDock}`;
+    assetModule.screens['template-empty'] = `<div class="demo-status"><span>10:30</span><span>● ● ◒</span></div><div class="demo-top"><button data-module-action="screen" data-screen="templates">‹</button><span>新模板</span><button class="text-action" data-module-action="open-modal" data-modal="template-settings">编辑</button></div><div class="gooh-empty asset-empty"><i>＋</i><b>模板中还没有行李</b><span>从下方任一入口添加第一件物品</span></div>${templateAddDock}`;
+
+    const essentialRulePattern = /保存条件|保存校验|数据校验|数据变化|页面跳转|输入校验|保存结果|成功结果|失败结果|删除影响|数据影响|影响范围|权限与并发|触发条件|恢复|生成规则|进度规则|实时变化|不可用模板|已添加判断|重复处理|校验|限制|后续流程|数据范围|内容范围|列表范围/;
+    MODULE_DEMOS.forEach(module => {
+      ['screen_notes', 'modal_notes'].forEach(key => {
+        Object.keys(module[key] || {}).forEach(id => {
+          module[key][id] = module[key][id].filter(note => essentialRulePattern.test(note[0]));
+        });
+      });
+    });
+
+    /* V5 static specification: final page states and acceptance copy. */
+    planModule.modals['custom-add'] = `<div class="demo-modal-backdrop" data-module-action="close-modal"></div><section class="demo-modal gooh-sheet tall"><header><b>添加行李</b></header><div class="gooh-form"><div class="luggage-name-quantity-row"><label class="name-field"><span>物品名称</span><input maxlength="20" placeholder="请输入名称"></label><label class="quantity-field"><span>数量</span><div class="gooh-stepper"><button data-module-action="step" data-delta="-1">−</button><b data-count>1</b><button data-module-action="step" data-delta="1">＋</button></div></label></div><label><span>清单类别</span><button data-module-action="open-modal" data-modal="plan-category-picker"><b data-category-value>其他</b> ›</button></label>${shareSetting(true)}</div><button class="blue-primary full-action" data-module-action="save-personal-item">保存行李</button></section>`;
+    planModule.modals['carry-scope-custom'] = `<div class="demo-modal-backdrop" data-module-action="close-modal"></div><section class="demo-modal gooh-sheet tall"><header><b>选择指定成员</b></header><div class="gooh-check-list carry-custom-members"><label><span>我</span><input type="checkbox" value="我" checked></label><label><span>小林</span><input type="checkbox" value="小林" checked></label><label><span>小周</span><input type="checkbox" value="小周"></label><label><span>小陈</span><input type="checkbox" value="小陈"></label></div><button class="blue-primary full-action">确定选择 2 人</button></section>`;
+    planModule.modals['batch-conflict'] = `<div class="demo-modal-backdrop" data-module-action="close-modal"></div><section class="demo-modal gooh-sheet confirm-sheet"><header><b>团队行李中存在重复物品</b></header><div class="batch-conflict-list"><b>移动电源</b><span>团队行李 · 数码产品中已存在同名物品</span></div><div class="confirm-copy"><span>可以取消并返回修改，或将重复物品移出本批次后继续添加其他行李。</span></div><div class="gooh-dual-actions"><button data-module-action="close-modal">取消</button><button class="blue-primary">移出物品并添加</button></div></section>`;
+    planModule.modal_titles['carry-scope-custom'] = '指定成员勾选弹窗';
+    planModule.modal_titles['batch-conflict'] = '团队行李重复冲突弹窗';
+
+    planModule.screens.discussion = planModule.screens.discussion
+      .replace('展开携带成员⌄</button><div class="inline-carrier-list" hidden>', '收起携带成员⌃</button><div class="inline-carrier-list">')
+      .replace('data-message="已提醒小周"', 'data-message="已跳转群聊并发送：@小周 护照 你还未确认携带，记得检查一下哦～"');
+    planModule.screens['batch-edit-list'] = `<div class="demo-status"><span>10:30</span><span>● ● ◒</span></div><div class="demo-top"><button data-module-action="back-batch-edit">‹</button><span>编辑行李</span><span></span></div><p class="batch-source-note">来自物品库 · 3 件</p><div class="shared-edit-list">${editCard('工作证')}${editCard('移动电源')}${editCard('速干衣', 2)}</div><div class="single-action-dock"><button class="blue-primary picker-save">保存行李</button></div>`;
+    planModule.screens['batch-edit-list'] = `<div class="demo-status"><span>10:30</span><span>● ● ◒</span></div><div class="demo-top"><button data-module-action="back-batch-edit">‹</button><span>编辑行李</span><span></span></div><p class="batch-source-note">来自物品库 · 3 件</p><div class="shared-edit-list">${editCard('工作证', 1, true, 'custom')}${editCard('移动电源')}${editCard('速干衣', 2)}</div><div class="single-action-dock"><button class="blue-primary picker-save" data-module-action="save-batch-edit-list">保存行李</button></div>`;
+    planModule.modals['custom-add'] = teamEditModal('', true);
+    planModule.modals['custom-add-custom'] = teamEditModal('', true, 'custom');
+    planModule.modals['edit-shared'] = teamEditModal('护照');
+    planModule.modals['edit-shared-custom'] = teamEditModal('护照', false, 'custom');
+    planModule.modals['opinion-editor'] = `<div class="demo-modal-backdrop" data-module-action="close-modal"></div><section class="demo-modal gooh-sheet tall"><header><b>编辑意见</b></header><label class="gooh-textarea"><textarea id="opinion-text" maxlength="20" data-limit-input placeholder="写下你的意见">周五统一核对证件。</textarea><small><span data-count-for="opinion-text">9</span>/20</small></label><button class="blue-primary full-action" data-module-action="save-opinion-modal">保存意见</button></section>`;
+    planModule.modal_titles['custom-add-custom'] = '添加团队行李 · 指定成员';
+    planModule.modal_titles['edit-shared-custom'] = '编辑团队行李 · 指定成员';
+    planModule.modal_titles['opinion-editor'] = '编辑意见弹窗';
+    planModule.screens['share-opinions'] = planModule.screens['share-opinions'].replace(/<td class="muted-cell">暂无意见<\/td>/g, '<td class="muted-cell"><span aria-label="未发表意见"></span></td>');
+    planModule.modals['discussion-item-info'] = `<div class="demo-modal-backdrop" data-module-action="close-modal"></div><section class="demo-modal gooh-sheet tall fixed-discussion-sheet"><header><b>护照</b></header><div class="team-info-summary"><div class="team-info-facts"><span><small>创建人</small><b>我</b></span><span><small>携带人</small><b>3 人</b></span><strong>2 / 3 已携带</strong></div><div class="team-info-progress"><i style="width:67%"></i></div></div><div class="discussion-info long"><p><strong>我：</strong>出发前统一核对证件有效期。</p><p><strong>小林：</strong>我会带两份纸质复印件。</p><p><strong>小周：</strong>电子版已经保存到手机。</p><p><strong>我：</strong>机场集合时再确认一次。</p></div><div class="gooh-dual-actions"><button data-module-action="open-modal" data-modal="opinion-editor">发表意见</button><button class="blue-primary" data-module-action="open-modal" data-modal="edit-shared">编辑行李</button></div></section>`;
+    planModule.modals['discussion-item-info-empty'] = `<div class="demo-modal-backdrop" data-module-action="close-modal"></div><section class="demo-modal gooh-sheet tall fixed-discussion-sheet"><header><b>移动电源</b></header><div class="team-info-summary"><div class="team-info-facts"><span><small>创建人</small><b>小林</b></span><span><small>携带人</small><b>1 人</b></span><strong>0 / 1 已携带</strong></div><div class="team-info-progress"><i style="width:0%"></i></div></div><div class="discussion-comment-empty"><div><i>…</i><b>还没有人发表意见</b><span>你可以成为第一个参与讨论的人</span></div></div><div class="gooh-dual-actions"><button data-module-action="open-modal" data-modal="opinion-editor">发表意见</button><button class="blue-primary" data-module-action="open-modal" data-modal="edit-shared">编辑行李</button></div></section>`;
+    planModule.modals['discussion-item-info'] = planModule.modals['discussion-item-info'].replace('>发表意见</button>', '>编辑意见</button>');
+
+    assetModule.screens.main = `<div class="demo-status"><span>10:30</span><span>● ● ◒</span></div><div class="demo-top"><button>‹</button><span>个人中心</span><span></span></div><div class="profile-card"><i>林</i><span><b>小林</b><small>旅行 12 次 · 同行好友 8 人</small></span></div><div class="profile-menu"><button><i>发</i><span><b>发布管理</b><small>管理已发布的行程内容</small></span><em>›</em></button><button data-module-action="screen" data-screen="templates"><i>▤</i><span><b>行李模板管理</b><small>管理个人行李模板</small></span><em>›</em></button><button><i>⚙</i><span><b>设置</b><small>账号与通知</small></span><em>›</em></button></div>`;
+
+    planModule.screen_notes['mine-single'] = [['页面说明', '与原单人计划行李页面一致。']];
+    planModule.modal_notes['edit-personal-single'] = [['页面说明', '与原编辑流程一致，不展示共享开关。']];
+    planModule.modal_notes['custom-add-single'] = [['页面说明', '与原添加流程一致，不展示共享开关。']];
+    planModule.screen_notes['library-picker-single'] = [['进入校验', '进入时同时校验计划内团队行李和当前用户个人行李；已存在对象显示“已添加”且不可选择。'], ['保存结果', '点击保存后返回清单，并将所选物品添加为个人行李。'], ['按钮状态', '选择 0 件物品时保存按钮置灰且不可点击。']];
+    planModule.screen_notes['template-picker'] = [['设置入口', '右上角新增设置入口，点击进入行李模板管理页。'], ['操作限制', '当前页面不支持新增模板或编辑个人模板。']];
+    planModule.screen_notes['template-picker-detail-single'] = [['进入校验', '进入时同时校验计划内团队行李和当前用户个人行李；已存在对象显示“已添加”且不可选择。'], ['保存结果', '点击保存后返回清单，并将所选物品添加为个人行李。'], ['按钮状态', '选择 0 件物品时保存按钮置灰且不可点击。']];
+
+    planModule.screen_notes.mine = [['页面展示', '页面与原行李清单一致，不再展示“共享”标签，统一更名为“团队”标签；顶部新增个人行李 / 团队行李 Tab。']];
+    planModule.modal_notes['edit-personal'] = [['开启共享', '开启共享时按“团队 + 类别 + 名称”校验；若已存在，Toast 提示“团队行李中已添加该物品”；若不存在，则显示携带人选择，默认选择所有成员。'], ['保存校验', '保存时再次校验唯一性；校验不通过时 Toast 提示，其他编辑操作与原流程一致。'], ['转换规则', '个人行李可转为团队行李，转换不可逆。']];
+    planModule.modal_notes['edit-shared'] = [['转换限制', '团队行李不可转为个人行李。'], ['携带数量', '共享开启后名称旁不显示数量；默认所有成员每人 1 件、最少 1 件。指定成员时逐人设置，0 件等同未指定。'], ['保存校验', '指定成员至少一人的数量大于 0，并校验“团队 + 类别 + 名称”唯一性。']];
+    planModule.modal_notes['custom-add'] = [['默认状态', '共享默认开启，物品名称旁不显示数量；下方默认“所有成员”，每人数量为 1，最少 1。'], ['唯一性校验', '按“团队 + 类别 + 名称”校验，重复时提示“团队行李中已添加该物品”。']];
+    planModule.modal_notes['custom-add-custom'] = [['指定成员', '切换后在当前弹窗直接显示成员列表；每人数量默认 0，最少 0，数量为 0 即未指定。'], ['保存条件', '至少一位成员的数量大于 0。']];
+    planModule.modal_notes['edit-shared-custom'] = planModule.modal_notes['custom-add-custom'];
+    planModule.modal_notes['opinion-editor'] = [['字数限制', '意见最多输入 20 字，输入时实时显示字数。'], ['保存结果', '保存后返回团队行李沟通弹窗。']];
+    planModule.screen_notes['library-picker-group'] = [['进入校验', '进入时同时校验计划内团队行李和当前用户个人行李；已存在对象显示“已添加”且不可选择。'], ['保存结果', '点击保存后进入批量行李编辑页。'], ['按钮状态', '选择 0 件物品时保存按钮置灰且不可点击。']];
+    planModule.screen_notes['template-picker-detail-group'] = [['进入校验', '进入时同时校验计划内团队行李和当前用户个人行李；已存在对象显示“已添加”且不可选择。'], ['保存结果', '点击保存后进入批量行李编辑页。'], ['按钮状态', '选择 0 件物品时保存按钮置灰且不可点击。']];
+    planModule.screen_notes['batch-edit-list'] = [['默认状态', '每件行李默认关闭共享；开启后隐藏原数量，在当前物品下方显示“所有成员 / 指定成员”及对应数量。'], ['数量规则', '所有成员默认每人 1 件、最少 1 件；指定成员逐人默认 0 件、最少 0 件，0 件表示未指定。'], ['保存冲突', '保存时再次校验；冲突时弹窗列出重复物品，提供“取消”和“移出物品并添加”。']];
+    planModule.modal_notes['batch-conflict'] = [['冲突处理', '取消后保留当前编辑内容；“移出物品并添加”会移除重复项，并继续保存其余有效物品。']];
+    planModule.screen_notes.discussion = [['列表范围', '展示所有团队行李，即使当前用户不是携带者，也可查看并发表意见。'], ['携带进度', '页面展示携带人进度；展开卡片可查看每位成员的具体携带状态。'], ['提醒跳转', '点击未携带成员的“提醒”后跳转计划群聊，并发送“@成员 {行李名称} 你还未确认携带，记得检查一下哦～”。'], ['页面跳转', '点击行李其他区域打开团队沟通弹窗；点击分享进入讨论汇总页面。']];
+    const discussionNotes = [['信息展示', '展示类别、创建者、团队行李总量和整体携带进度，不展示逐成员数量及携带状态；讨论信息列表可在弹窗内滑动查看。'], ['空状态', '没有讨论信息时仍保留行李概要，并展示可发表第一条意见的空布局。']];
+    planModule.modal_notes['discussion-item-info'] = discussionNotes;
+    planModule.modal_notes['discussion-item-info-empty'] = discussionNotes;
+    planModule.screen_notes['share-opinions'] = [['图片展示', '默认按清晰可读尺寸展示；成员较多时支持在图片区域内左右滑动。'], ['表格结构', 'A 列为行李，后续每列对应一名成员对每件行李的评论；未发表意见的单元格保留空占位。']];
+
+    assetModule.screen_notes.main = [['入口位置', '个人中心新增“行李模板管理”入口，放置在“发布管理”之下。']];
+    assetModule.screen_notes.templates = [['页面说明', '模板管理页与原页面一致。']];
+    assetModule.screen_notes['template-detail'] = [['页面结构', '页面与原模板详情基本一致，底部入口调整为“物品库添加”“从其他模板添加”“自定义添加”。'], ['使用规则', '取消“使用模板”概念，一个计划可以连续添加多个模板。']];
+    assetModule.screen_notes['template-source-list'] = [['数据校验', '来源模板列表不展示当前正在编辑的模板。']];
+
+    // Product review update: keep the visible page and its acceptance copy in sync.
+    function reviseMarkup(html, revise) {
+      const root = document.createElement('div');
+      root.innerHTML = html;
+      revise(root);
+      return root.innerHTML;
+    }
+    ['library-picker', 'template-picker-detail'].forEach(id => {
+      planModule.screens[id] = reviseMarkup(planModule.screens[id], root => {
+        root.querySelectorAll('.plan-picker-list .demo-group-head small, .plan-picker-list > div > span > small').forEach(node => node.remove());
+      });
+    });
+    ['template-library-picker', 'template-source-picker'].forEach(id => {
+      assetModule.screens[id] = reviseMarkup(assetModule.screens[id], root => {
+        root.querySelectorAll('.plan-picker-list .demo-group-head small, .plan-picker-list > div > span > small').forEach(node => node.remove());
+      });
+    });
+    planModule.screens['batch-edit-list'] = reviseMarkup(planModule.screens['batch-edit-list'], root => {
+      root.querySelector('.batch-source-note')?.remove();
+      const cards = root.querySelectorAll('.shared-edit-list article');
+      cards[0]?.querySelector('.inline-carry-tabs [data-mode="all"]')?.click();
+      if (cards[0]) {
+        const setting = cards[0].querySelector('.inline-carry-setting');
+        setting.dataset.carryMode = 'all';
+        setting.querySelector('.all-carry-count').hidden = false;
+        setting.querySelector('.member-carry-counts').hidden = true;
+        setting.querySelectorAll('.inline-carry-tabs button').forEach(button => button.classList.toggle('selected', button.dataset.mode === 'all'));
+      }
+    });
+    function addModalActions(html) {
+      return reviseMarkup(html, root => {
+        const save = root.querySelector('button.full-action');
+        if (!save) return;
+        save.textContent = '保存';
+        save.classList.remove('full-action');
+        const actions = document.createElement('div');
+        actions.className = 'add-modal-actions';
+        save.before(actions);
+        actions.appendChild(save);
+        const next = document.createElement('button');
+        next.className = 'continue-add';
+        next.dataset.moduleAction = 'save-and-continue';
+        next.textContent = '继续添加';
+        actions.appendChild(next);
+      });
+    }
+    ['custom-add-single', 'custom-add', 'custom-add-custom', 'custom-add-team'].forEach(id => {
+      planModule.modals[id] = addModalActions(planModule.modals[id]);
+    });
+    assetModule.modals['template-add-custom'] = addModalActions(assetModule.modals['template-add-custom']);
+
+    function escapeHtml(value) {
+      const node = document.createElement('span');
+      node.textContent = String(value);
+      return node.innerHTML.replaceAll('"', '&quot;').replaceAll("'", '&#39;');
+    }
+
+    const teamItems = [
+      { id: 'passport', category: '个人证件', name: '护照', comments: 4, carried: 2, members: { '我': 1, '小林': 1, '小周': 1, '小陈': 0 }, done: ['我', '小林'], opinions: { '我': '周五统一核对证件。', '小林': '出发前确认有效期。', '小周': '准备两份复印件。', '小陈': '电子版存到手机。' } },
+      { id: 'charger', category: '数码产品', name: '充电器', comments: 2, carried: 1, members: { '我': 2, '小林': 1, '小周': 0, '小陈': 0 }, done: ['我'], opinions: { '我': '我带双口充电器。', '小林': '再带一根备用线。' } },
+      { id: 'power', category: '数码产品', name: '移动电源', comments: 0, carried: 0, members: { '我': 0, '小林': 1, '小周': 0, '小陈': 0 }, done: [], opinions: {} },
+    ];
+    const memberNames = ['我', '小林', '小周', '小陈'];
+    function memberInitial(name) { return name === '我' ? '我' : name.slice(-1); }
+    function teamTotals(item) {
+      const carriers = memberNames.filter(name => item.members[name] > 0);
+      return { carriers: carriers.length, quantity: carriers.reduce((sum, name) => sum + item.members[name], 0), packed: item.done.reduce((sum, name) => sum + item.members[name], 0) };
+    }
+    function teamCard(item, expanded = false) {
+      const totals = teamTotals(item);
+      const modal = item.id === 'power' ? 'discussion-item-info-empty' : item.id === 'charger' ? 'discussion-item-info-charger' : item.id === 'passport' ? 'discussion-item-info' : `discussion-item-info-${item.id}`;
+      return `<article><button class="discussion-item-main" data-module-action="open-modal" data-modal="${modal}"><span><small class="team-card-category">${escapeHtml(item.category)}</small><span class="discussion-item-title"><b>${escapeHtml(item.name)}</b><em>${item.comments} 条讨论</em></span><span class="team-card-meta"><strong>携带人数 ${item.carried}/${totals.carriers}</strong><span>行李数量 ${totals.quantity} 件</span></span><span class="team-card-quantity">行李携带进度 ${totals.packed}/${totals.quantity} 件</span><span class="carry-progress-bar"><i style="width:${Math.round(totals.packed / totals.quantity * 100)}%"></i></span></span><i>›</i></button><button class="carrier-list-link" data-module-action="toggle-carriers">${expanded ? '收起携带成员⌃' : '展开携带成员⌄'}</button><div class="inline-carrier-list" ${expanded ? '' : 'hidden'}>${memberNames.filter(name => item.members[name] > 0).map(name => `<span><i>${memberInitial(name)}</i><b>${name}</b><strong class="member-quantity">${item.members[name]} 件</strong>${item.done.includes(name) ? '<em class="member-status">已携带</em>' : `<button data-module-action="notify" data-message="${escapeHtml(`已跳转群聊并发送：@${name} ${item.name} 你还未确认携带，记得检查一下哦～`)}">提醒</button>`}</span>`).join('')}</div></article>`;
+    }
+    planModule.screens.discussion = reviseMarkup(planModule.screens.discussion, root => {
+      root.querySelector('.discussion-item-list.rich').innerHTML = teamItems.map((item, index) => teamCard(item, index === 0)).join('');
+    });
+    function teamInfoModal(item) {
+      const totals = teamTotals(item);
+      const discussion = item.comments ? `<div class="discussion-info long">${memberNames.filter(name => item.opinions[name]).map(name => `<p><strong>${name}：</strong>${escapeHtml(item.opinions[name])}</p>`).join('')}</div>` : '<div class="discussion-comment-empty"><div><i>…</i><b>还没有人发表意见</b><span>你可以成为第一个参与讨论的人</span></div></div>';
+      return `<div class="demo-modal-backdrop" data-module-action="close-modal"></div><section class="demo-modal gooh-sheet tall fixed-discussion-sheet"><header><b>${escapeHtml(item.name)}</b></header><div class="team-info-summary"><div class="team-info-facts"><span><small>类别</small><b>${escapeHtml(item.category)}</b></span><span><small>创建人</small><b>${item.id === 'power' ? '小林' : '我'}</b></span><strong>${item.carried}/${totals.carriers} 人已携带</strong></div><div class="team-info-progress"><i style="width:${Math.round(totals.packed / totals.quantity * 100)}%"></i></div></div><div class="team-info-detail"><b>行李数量 ${totals.quantity} 件</b><small>行李携带进度 ${totals.packed}/${totals.quantity} 件</small></div>${discussion}<div class="gooh-dual-actions"><button data-module-action="open-modal" data-modal="opinion-editor">${item.opinions['我'] ? '编辑意见' : '发表意见'}</button><button class="blue-primary" data-module-action="open-modal" data-modal="edit-shared">编辑行李</button></div></section>`;
+    }
+    planModule.modals['discussion-item-info'] = teamInfoModal(teamItems[0]);
+    planModule.modals['discussion-item-info-charger'] = teamInfoModal(teamItems[1]);
+    planModule.modals['discussion-item-info-empty'] = teamInfoModal(teamItems[2]);
+    planModule.modal_titles['discussion-item-info-charger'] = '充电器沟通弹窗';
+    planModule.modal_notes['discussion-item-info-charger'] = planModule.modal_notes['discussion-item-info'];
+    planModule.screens['share-opinions'] = reviseMarkup(planModule.screens['share-opinions'], root => {
+      root.querySelector('.share-page-intro')?.remove();
+      root.querySelector('.share-matrix tbody').innerHTML = teamItems.map(item => `<tr><td><small class="share-category">${item.category}</small><b>${item.name}</b></td>${memberNames.map(name => `<td><b class="share-count">${item.members[name]} 件</b>${item.opinions[name] ? `<span class="share-comment">（${item.opinions[name]}）</span>` : ''}</td>`).join('')}</tr>`).join('');
+    });
+    function refreshTeamOpinions() {
+      planModule.screens.discussion = reviseMarkup(planModule.screens.discussion, root => {
+        root.querySelector('.discussion-item-list.rich').innerHTML = teamItems.map((item, index) => teamCard(item, index === 0)).join('');
+      });
+      planModule.screens['share-opinions'] = reviseMarkup(planModule.screens['share-opinions'], root => {
+        root.querySelector('.share-matrix tbody').innerHTML = teamItems.map(item => `<tr><td><small class="share-category">${item.category}</small><b>${item.name}</b></td>${memberNames.map(name => `<td><b class="share-count">${item.members[name]} 件</b>${item.opinions[name] ? `<span class="share-comment">（${item.opinions[name]}）</span>` : ''}</td>`).join('')}</tr>`).join('');
+      });
+      planModule.modals['discussion-item-info'] = teamInfoModal(teamItems[0]);
+      planModule.modals['discussion-item-info-charger'] = teamInfoModal(teamItems[1]);
+      planModule.modals['discussion-item-info-empty'] = teamInfoModal(teamItems[2]);
+    }
+    assetModule.screens.main = reviseMarkup(assetModule.screens.main, root => {
+      root.querySelectorAll('.profile-menu small').forEach(node => node.remove());
+      const templateLink = root.querySelector('.profile-menu [data-screen="templates"] b');
+      if (templateLink) templateLink.textContent = '行李模板';
+    });
+    function sortControls(action) {
+      return `<span class="template-sort-controls"><button title="上移" aria-label="上移" data-module-action="${action}" data-direction="up">↑</button><button title="下移" aria-label="下移" data-module-action="${action}" data-direction="down">↓</button></span>`;
+    }
+    assetModule.screens['template-detail'] = reviseMarkup(assetModule.screens['template-detail'], root => {
+      const sort = root.querySelector('.demo-top .text-action');
+      sort.textContent = '排序';
+      sort.dataset.moduleAction = 'toggle-template-sort';
+      sort.removeAttribute('data-modal');
+      root.querySelectorAll('.template-category-card').forEach(category => {
+        category.querySelector('header').insertAdjacentHTML('beforeend', sortControls('move-template-category'));
+        category.querySelectorAll('.template-category-items > button').forEach(item => {
+          const row = document.createElement('div');
+          row.className = 'template-item-row';
+          item.before(row);
+          row.appendChild(item);
+          row.insertAdjacentHTML('beforeend', sortControls('move-template-item'));
+        });
+      });
+    });
+    assetModule.screens['system-template-detail'] = `<div class="demo-status"><span>10:30</span><span>● ● ◒</span></div><div class="demo-top"><button data-module-action="screen" data-screen="templates">‹</button><span>城市短途</span><span></span></div><div class="template-category-list">${[
+      ['个人证件', '身份证', '银行卡', '护照'],
+      ['数码产品', '充电器', '移动电源', '耳机'],
+      ['衣物', '外套', '速干衣'],
+      ['其他', '水杯', '雨伞'],
+    ].map(([category, ...items]) => `<section class="template-category-card"><header><b>${category}（${items.length}）</b></header><div class="template-category-items">${items.map(name => `<div>${name}</div>`).join('')}</div></section>`).join('')}</div>`;
+
+    planModule.screen_notes['batch-edit-list'] = [['未共享对象', '只展示物品名称、个人数量和共享开关，不展示携带人设置。'], ['共享对象', '开启共享后在当前对象下方设置携带方式及数量。'], ['保存冲突', '保存时再次校验团队行李唯一性。']];
+    planModule.screen_notes.discussion = [['卡片内容', '每件行李展示类别、名称、讨论数量、携带人数进度、总数量及行李携带进度。'], ['成员数量', '展开后逐人显示应携带数量；未携带成员可提醒。'], ['沟通', '点击卡片展示类别、总数量、各成员数量、进度及意见。']];
+    planModule.screen_notes['share-opinions'] = [['表格结构', '首列按类别标明行李；成员列为数量加可选评论，数量为零显示 0 件，未评论不展示评论。'], ['查看方式', '成员较多时横向滑动查看。']];
+    assetModule.screen_notes.main = [['入口', '发布管理下方为“行李模板”，操作项不显示附加描述。']];
+    assetModule.screen_notes['template-detail'] = [['排序', '右上角点击“排序”后显示类别和物品的上移、下移控件；点击“完成”退出排序。'], ['添加', '底部可从物品库、其他模板或自定义添加。']];
+    assetModule.screen_notes['system-template-detail'] = [['页面结构', '与个人模板详情采用相同类别和物品布局。'], ['操作限制', '系统模板只读，不展示排序、编辑或添加操作。']];
 
     const DEMO_NAV_GROUPS = [
       {
-        title: '计划行李 · A 方案', module: 'plan-list-a', items: [
-          { label: '行李清单主页', screen: 'mine' },
-          { label: '行李清单空状态', screen: 'mine-empty' },
+        title: '计划行李', module: 'plan-list', items: [
+          { label: '单人计划行李状态', screen: 'mine-single' },
+          { label: '多人计划行李', screen: 'mine' },
           { label: '编辑个人行李', screen: 'mine', modal: 'edit-personal' },
-          { label: '编辑团队行李', screen: 'mine', modal: 'edit-shared' },
-          { label: '个人行李添加来源', screen: 'mine', modal: 'add-source-personal' },
-          { label: '团队行李添加来源', screen: 'mine', modal: 'add-source-shared' },
-          { label: '新增个人行李', screen: 'mine', modal: 'custom-add-personal' },
-          { label: '新增团队行李', screen: 'mine', modal: 'custom-add-shared' },
-          { label: '物品库选择', screen: 'library-picker', returnScreen: 'mine' },
-          { label: '团队行李批量编辑', screen: 'shared-edit-list' },
-          { label: '模板列表', screen: 'template-picker', returnScreen: 'mine' },
-          { label: '模板物品选择', screen: 'template-picker-detail', returnScreen: 'mine' },
-          { label: '团队行李讨论', screen: 'discussion' },
-          { label: '分享讨论汇总', screen: 'share-opinions' },
-          { label: '团队行李暂无评论', screen: 'discussion', modal: 'discussion-item-info-empty' },
-        ]
-      },
-      {
-        title: '计划行李 · B 方案', module: 'plan-list', items: [
-          { label: '行李清单主页', screen: 'mine' },
-          { label: '行李清单空状态', screen: 'mine-empty' },
-          { label: '编辑行李 · 未共享', screen: 'mine', modal: 'edit-personal' },
-          { label: '个人转共享确认', screen: 'mine', modal: 'confirm-personal-to-shared' },
-          { label: '编辑行李 · 已共享', screen: 'mine', modal: 'edit-shared' },
-          { label: '共享转个人确认', screen: 'mine', modal: 'confirm-shared-to-personal' },
+          { label: '编辑团队行李', screen: 'discussion', modal: 'edit-shared' },
           { label: '添加行李', screen: 'mine', modal: 'custom-add' },
+          { label: '添加团队行李', screen: 'discussion-empty-group', modal: 'custom-add-team' },
+          { label: '添加团队行李 · 指定成员', screen: 'mine', modal: 'custom-add-custom' },
+          { label: '编辑团队行李 · 指定成员', screen: 'discussion', modal: 'edit-shared-custom' },
           { label: '物品库选择', screen: 'library-picker', returnScreen: 'mine' },
-          { label: '物品库行李编辑', screen: 'library-edit-list' },
-          { label: '物品库同名合并确认', screen: 'library-edit-list', modal: 'confirm-library-share-merge' },
           { label: '模板列表', screen: 'template-picker', returnScreen: 'mine' },
           { label: '模板物品选择', screen: 'template-picker-detail', returnScreen: 'mine' },
-          { label: '模板行李编辑', screen: 'template-edit-list' },
-          { label: '模板同名合并确认', screen: 'template-edit-list', modal: 'confirm-template-share-merge' },
-          { label: '模板应用确认', screen: 'template-edit-list', modal: 'confirm-template-apply' },
-          { label: '团队行李讨论', screen: 'discussion' },
+          { label: '批量行李编辑', screen: 'batch-edit-list' },
+          { label: '多人计划行李 · 团队 Tab', screen: 'discussion' },
+          { label: '多人计划行李 · 团队空状态', screen: 'discussion-empty-group' },
           { label: '分享讨论汇总', screen: 'share-opinions' },
-          { label: '携带成员列表', screen: 'discussion-carriers' },
-          { label: '团队讨论空状态', screen: 'discussion-empty' },
-          { label: '团队行李信息', screen: 'discussion', modal: 'discussion-item-info' },
+          { label: '团队行李沟通', screen: 'discussion', modal: 'discussion-item-info' },
           { label: '团队行李暂无评论', screen: 'discussion', modal: 'discussion-item-info-empty' },
-          { label: '物品库空状态', screen: 'library-picker-empty', returnScreen: 'mine' },
-          { label: '模板列表空状态', screen: 'template-picker-empty', returnScreen: 'mine' },
+          { label: '编辑意见', screen: 'discussion', modal: 'opinion-editor' },
         ]
       },
       {
         title: '行李资产', module: 'item-library', items: [
           { label: '个人中心', screen: 'main' },
-          { label: '行李资产', screen: 'templates' },
+          { label: '行李模板管理', screen: 'templates' },
           { label: '个人模板详情', screen: 'template-detail' },
           { label: '模板物品库选择', screen: 'template-library-picker' },
+          { label: '来源模板选择', screen: 'template-source-list' },
           { label: '模板物品选择', screen: 'template-source-picker' },
           { label: '编辑个人模板', screen: 'template-detail', modal: 'template-settings' },
           { label: '系统模板详情', screen: 'system-template-detail' },
@@ -3222,46 +3812,22 @@
 
     const STATIC_FLOWS = [
       {
-        title: '模块 1A · 计划行李 A 方案', subtitle: '保留原方案：先选择添加个人行李或团队行李，再选择物品来源。', module: 'plan-list-a',
+        title: '模块 1 · 计划行李', subtitle: '单人直接保存；多人可逐件设置共享，并通过 Tab 切换个人与团队行李。', module: 'plan-list',
         items: [
-          { label: '行李清单主页', screen: 'mine' },
-          { label: '行李清单空状态', screen: 'mine-empty' },
-          { label: '个人行李添加来源', screen: 'mine', modal: 'add-source-personal' },
-          { label: '新增个人行李', screen: 'mine', modal: 'custom-add-personal' },
-          { label: '团队行李添加来源', screen: 'mine', modal: 'add-source-shared' },
-          { label: '新增团队行李', screen: 'mine', modal: 'custom-add-shared' },
-          { label: '物品库选择', screen: 'library-picker' },
-          { label: '团队行李批量编辑', screen: 'shared-edit-list' },
-          { label: '选择模板', screen: 'template-picker' },
-          { label: '选择模板物品', screen: 'template-picker-detail' },
-          { label: '团队行李讨论', screen: 'discussion' },
-          { label: '分享讨论汇总', screen: 'share-opinions' },
-          { label: '团队行李暂无评论', screen: 'discussion', modal: 'discussion-item-info-empty' },
-        ]
-      },
-      {
-        title: '模块 1B · 计划行李 B 方案', subtitle: '新增方案：使用统一入口，在编辑阶段逐件设置是否共享。', module: 'plan-list',
-        items: [
-          { label: '行李清单主页', screen: 'mine' },
-          { label: '行李清单空状态', screen: 'mine-empty' },
-          { label: '编辑行李 · 未共享', screen: 'mine', modal: 'edit-personal' },
-          { label: '个人转共享确认', screen: 'mine', modal: 'confirm-personal-to-shared' },
-          { label: '编辑行李 · 已共享', screen: 'mine', modal: 'edit-shared' },
-          { label: '共享转个人确认', screen: 'mine', modal: 'confirm-shared-to-personal' },
+          { label: '单人计划行李状态', screen: 'mine-single' },
+          { label: '多人计划行李', screen: 'mine' },
+          { label: '编辑个人行李', screen: 'mine', modal: 'edit-personal' },
+          { label: '编辑团队行李', screen: 'discussion', modal: 'edit-shared' },
           { label: '添加行李', screen: 'mine', modal: 'custom-add' },
+          { label: '携带人选择', screen: 'mine', modal: 'carry-scope' },
           { label: '物品库选择', screen: 'library-picker' },
-          { label: '物品库行李编辑', screen: 'library-edit-list' },
-          { label: '物品库同名合并确认', screen: 'library-edit-list', modal: 'confirm-library-share-merge' },
           { label: '选择模板', screen: 'template-picker' },
           { label: '选择模板物品', screen: 'template-picker-detail' },
-          { label: '模板行李编辑', screen: 'template-edit-list' },
-          { label: '模板同名合并确认', screen: 'template-edit-list', modal: 'confirm-template-share-merge' },
-          { label: '模板应用确认', screen: 'template-edit-list', modal: 'confirm-template-apply' },
-          { label: '团队行李讨论', screen: 'discussion' },
+          { label: '批量行李编辑', screen: 'batch-edit-list' },
+          { label: '多人计划行李 · 团队 Tab', screen: 'discussion' },
+          { label: '多人计划行李 · 团队空状态', screen: 'discussion-empty-group' },
           { label: '分享讨论汇总', screen: 'share-opinions' },
-          { label: '携带成员列表', screen: 'discussion-carriers' },
-          { label: '团队讨论空状态', screen: 'discussion-empty' },
-          { label: '团队行李信息', screen: 'discussion', modal: 'discussion-item-info' },
+          { label: '团队行李沟通', screen: 'discussion', modal: 'discussion-item-info' },
           { label: '团队行李暂无评论', screen: 'discussion', modal: 'discussion-item-info-empty' },
         ]
       },
@@ -3269,15 +3835,67 @@
         title: '模块 2 · 行李资产', subtitle: '从个人中心进入，只管理跨计划复用的个人行李模板。', module: 'item-library',
         items: [
           { label: '个人中心', screen: 'main' },
-          { label: '行李资产', screen: 'templates' },
+          { label: '行李模板管理', screen: 'templates' },
           { label: '系统模板详情', screen: 'system-template-detail' },
           { label: '个人模板详情', screen: 'template-detail' },
           { label: '模板物品库选择', screen: 'template-library-picker' },
+          { label: '来源模板选择', screen: 'template-source-list' },
           { label: '模板物品选择', screen: 'template-source-picker' },
           { label: '编辑个人模板', screen: 'template-detail', modal: 'template-settings' },
           { label: '新建模板', screen: 'templates', modal: 'new-template' },
           { label: '空模板', screen: 'template-empty' },
         ]
+      },
+    ];
+
+    const STATIC_FLOWCHARTS = [
+      {
+        title: '模块 01', name: '单人计划行李', subtitle: '单人计划内的页面与弹窗，按实际查看顺序横向排列。', module: 'plan-list',
+        items: [
+          { label: '行李页', screen: 'mine-single' },
+          { label: '编辑个人行李弹窗', screen: 'mine-single', modal: 'edit-personal-single', via: '点击行李' },
+          { label: '添加个人行李弹窗', screen: 'mine-single', modal: 'custom-add-single', via: '添加行李' },
+          { label: '物品库添加', screen: 'library-picker', noteId: 'library-picker-single', via: '物品库' },
+          { label: '行李模板添加 1 · 选择模板', screen: 'template-picker', via: '行李模板' },
+          { label: '行李模板添加 2 · 选择物品', screen: 'template-picker-detail', noteId: 'template-picker-detail-single', via: '选择模板' },
+        ],
+      },
+      {
+        title: '模块 02', name: '多人计划行李', subtitle: '多人计划内的添加、共享、批量编辑和团队协作页面。', module: 'plan-list',
+        items: [
+          { label: '多人行李页', screen: 'mine' },
+          { label: '编辑个人行李弹窗', screen: 'mine', modal: 'edit-personal', via: '点击个人行李' },
+          { label: '编辑团队行李弹窗', screen: 'discussion', modal: 'edit-shared', via: '点击团队行李后编辑' },
+          { label: '添加行李弹窗', screen: 'mine', modal: 'custom-add', via: '添加行李' },
+          { label: '添加团队行李 · 指定成员', screen: 'mine', modal: 'custom-add-custom', via: '切换指定成员' },
+          { label: '编辑团队行李 · 指定成员', screen: 'discussion', modal: 'edit-shared-custom', via: '切换指定成员' },
+          { label: '物品库添加', screen: 'library-picker', noteId: 'library-picker-group', via: '物品库' },
+          { label: '行李模板添加 1 · 选择模板', screen: 'template-picker', via: '行李模板' },
+          { label: '行李模板添加 2 · 选择物品', screen: 'template-picker-detail', noteId: 'template-picker-detail-group', via: '选择模板' },
+          { label: '批量行李编辑', screen: 'batch-edit-list', via: '保存选择' },
+          { label: '重复物品冲突弹窗', screen: 'batch-edit-list', modal: 'batch-conflict', via: '保存时发现重复' },
+          { label: '团队行李页', screen: 'discussion', via: '切换团队行李' },
+          { label: '团队行李沟通弹窗', screen: 'discussion', modal: 'discussion-item-info', via: '点击团队行李' },
+          { label: '团队行李沟通空状态', screen: 'discussion', modal: 'discussion-item-info-empty', via: '暂无讨论' },
+          { label: '编辑意见弹窗', screen: 'discussion', modal: 'opinion-editor', via: '发表或编辑意见' },
+          { label: '分享讨论汇总', screen: 'share-opinions', via: '分享' },
+        ],
+      },
+      {
+        title: '模块 03', name: '行李管理', subtitle: '个人中心中的模板查看、维护、新建与物品添加页面。', module: 'item-library',
+        items: [
+          { label: '个人中心', screen: 'main' },
+          { label: '行李模板管理', screen: 'templates', via: '行李管理' },
+          { label: '个人模板详情', screen: 'template-detail', via: '选择模板' },
+          { label: '系统模板详情', screen: 'system-template-detail', via: '选择系统模板' },
+          { label: '编辑个人模板弹窗', screen: 'template-detail', modal: 'template-settings', via: '编辑' },
+          { label: '模板物品库添加', screen: 'template-library-picker', via: '物品库添加' },
+          { label: '来源模板选择', screen: 'template-source-list', via: '其他模板添加' },
+          { label: '模板物品选择', screen: 'template-source-picker', via: '选择模板' },
+          { label: '自定义添加弹窗', screen: 'template-detail', modal: 'template-add-custom', via: '自定义添加' },
+          { label: '新建模板弹窗', screen: 'templates', modal: 'new-template', via: '添加模板' },
+          { label: '新模板空状态', screen: 'template-empty', via: '创建' },
+        ],
       },
     ];
 
@@ -3328,6 +3946,29 @@
       layer.className = 'demo-modal-layer';
       layer.innerHTML = module.modals[top.id];
       moduleStage.appendChild(layer);
+      if (top.id === 'opinion-editor') {
+        const source = modalStack.at(-2)?.id;
+        const item = source === 'discussion-item-info-charger' ? teamItems[1] : source === 'discussion-item-info-empty' ? teamItems[2] : teamItems[0];
+        const input = layer.querySelector('#opinion-text');
+        input.value = item.opinions['我'] || '';
+        layer.querySelector('[data-count-for="opinion-text"]').textContent = String(input.value.length);
+        layer.querySelector('header b').textContent = input.value ? '编辑意见' : '发表意见';
+        layer.querySelector('[data-module-action="save-opinion-modal"]').disabled = !input.value;
+      }
+      if (top.id === 'carry-scope' && carryScopeSource?.scope) {
+        const mode = carryScopeSource.scope.dataset.carryMode || 'all';
+        layer.querySelectorAll('[data-module-action="choose-carry-mode"]').forEach(button => {
+          button.classList.toggle('selected', button.dataset.mode === mode);
+        });
+        const customMembers = layer.querySelector('.carry-custom-members');
+        if (customMembers) customMembers.hidden = mode !== 'custom';
+        const savedMembers = (carryScopeSource.scope.dataset.carryMembers || '').split('|').filter(Boolean);
+        if (savedMembers.length) {
+          layer.querySelectorAll('[data-carry-member]').forEach(input => {
+            input.checked = savedMembers.includes(input.value);
+          });
+        }
+      }
       renderContextNotes('modal', top.id, top.noteId);
       updateDynamicNav();
     }
@@ -3355,15 +3996,11 @@
       activeModuleId = module.id;
       activeModuleScreen = module.screens[screenId] ? screenId : Object.keys(module.screens)[0];
       modalStack = [];
+      carryScopeSource = null;
       moduleStage.innerHTML = module.screens[activeModuleScreen];
-      if ((module.id === 'plan-list' || module.id === 'plan-list-a') && (activeModuleScreen === 'library-picker' || activeModuleScreen === 'template-picker')) {
-        const context = moduleStage.querySelector('[data-picker-context]');
-        if (context && module.id === 'plan-list') context.textContent = activeModuleScreen === 'library-picker'
-          ? '选择后可逐件设置数量与共享范围'
-          : '选择模板后可挑选物品并逐件编辑';
-        if (context && module.id === 'plan-list-a') context.textContent = planAddScope === 'public'
-          ? '当前添加到团队行李'
-          : '当前添加到个人行李';
+      if (module.id === 'plan-list' && activeModuleScreen === 'batch-edit-list') {
+        const source = moduleStage.querySelector('[data-batch-source-note]');
+        if (source) source.textContent = planAddSource === 'template' ? '来自“户外徒步” · 3 件' : '来自物品库 · 3 件';
       }
       renderContextNotes('screen', activeModuleScreen);
       updateDynamicNav();
@@ -3392,19 +4029,64 @@
 
     function staticNotes(module, item) {
       const isModal = Boolean(item.modal);
-      const notes = isModal ? (module.modal_notes?.[item.modal] || []) : (module.screen_notes?.[item.screen] || []);
+      const noteId = item.noteId || (isModal ? item.modal : item.screen);
+      const notes = isModal ? (module.modal_notes?.[noteId] || []) : (module.screen_notes?.[noteId] || []);
       return notes.map((note, index) => `<li class="${note[2] === 'system' ? 'system' : ''}"><span>${index + 1}、${note[0]}：${note[1]}</span></li>`).join('');
     }
 
     function renderStaticPages() {
-      staticPages.innerHTML = STATIC_FLOWS.map(flow => {
+      staticPages.innerHTML = STATIC_FLOWCHARTS.map(flow => {
         const module = MODULE_DEMOS.find(item => item.id === flow.module);
-        return `<section class="static-module-row"><header><small>${flow.title}</small><h3>${module.name}</h3><p>${flow.subtitle}</p></header><div class="static-flow">${flow.items.map((item, index) => `
-          <article class="static-page-unit"><div class="static-page-label"><span>页面 ${index + 1}</span><b>${item.label}</b></div><div class="static-phone"><div class="module-stage">${module.screens[item.screen] || ''}${item.modal ? `<div class="demo-modal-layer">${module.modals[item.modal] || ''}</div>` : ''}</div></div><ul class="static-page-notes">${staticNotes(module, item)}</ul></article>${index < flow.items.length - 1 ? '<div class="static-arrow">→</div>' : ''}
-        `).join('')}</div></section>`;
+        return `<section class="static-module-row"><header><small>${flow.title}</small><h3>${flow.name}</h3><p>${flow.subtitle}</p></header>
+          <div class="static-sequence">${flow.items.map((item, index) => `${index ? `<div class="static-sequence-arrow"><span>${item.via || '下一步'}</span><i>→</i></div>` : ''}
+            <article class="static-sequence-page"><div class="static-sequence-label"><span>${String(index + 1).padStart(2, '0')}</span><div><b>${item.label}</b><small>${item.modal ? '弹窗状态' : '页面状态'}</small></div></div><div class="static-phone"><div class="module-stage">${module.screens[item.screen] || ''}${item.modal ? `<div class="demo-modal-layer">${module.modals[item.modal] || ''}</div>` : ''}</div></div><ul class="static-page-notes">${staticNotes(module, item)}</ul></article>`).join('')}</div>
+        </section>`;
       }).join('');
     }
     renderStaticPages();
+    const staticFocus = new URLSearchParams(location.search).get('focus');
+    if (staticFocus) requestAnimationFrame(() => {
+      const page = Array.from(staticPages.querySelectorAll('.static-sequence-page')).find(item => item.querySelector('.static-sequence-label b')?.textContent.trim() === staticFocus);
+      if (page) {
+        page.id = 'review-focus';
+        document.body.classList.add('review-focus-mode');
+        location.hash = 'review-focus';
+      }
+    });
+
+    const existingTeamItems = new Set(['护照', '充电器', '移动电源']);
+    function itemNameIn(scope) {
+      return (scope.querySelector('input[maxlength="20"]')?.value || scope.dataset.itemName || '').trim();
+    }
+    function teamItemExists(scope) {
+      return scope.dataset.editingTeam !== 'true' && existingTeamItems.has(itemNameIn(scope));
+    }
+    function validCarryQuantities(scope) {
+      const setting = scope.querySelector('.inline-carry-setting:not([hidden])');
+      return !setting || setting.dataset.carryMode === 'all'
+        || Array.from(setting.querySelectorAll('.member-carry-counts [data-count]')).some(count => Number(count.textContent) > 0);
+    }
+    function blockedShareScopes() {
+      return Array.from(moduleStage.querySelectorAll('article, .demo-modal .gooh-form')).filter(scope => {
+        const toggle = scope.querySelector('[data-module-action="toggle-item-share"]');
+        return teamItemExists(scope) && (toggle?.classList.contains('on') || scope.dataset.shareBlocked === 'true');
+      });
+    }
+    function resolveCarryScope(source) {
+      if (source?.scope?.isConnected) return source.scope;
+      const carrier = moduleStage.querySelector('.demo-modal-layer .carrier-field')
+        || moduleStage.querySelector('.shared-edit-list .carrier-field');
+      return carrier?.closest('article, .gooh-form, .demo-modal') || null;
+    }
+    function restoreCarryForm(scope, formState) {
+      if (!scope || !formState) return;
+      const input = scope.querySelector('input[maxlength="20"]');
+      const count = scope.querySelector('[data-count]');
+      const category = scope.querySelector('[data-category-value]');
+      if (input) input.value = formState.name;
+      if (count) count.textContent = formState.count;
+      if (category) category.textContent = formState.category;
+    }
 
     moduleStage.addEventListener('click', event => {
       const control = event.target.closest('[data-module-action]');
@@ -3415,15 +4097,14 @@
         return;
       }
       if (action === 'open-plan-picker') {
-        planReturnScreen = 'mine';
+        planMode = control.dataset.planMode || 'group';
+        planReturnScreen = planMode === 'single' ? 'mine-single' : 'mine';
         planAddSource = control.dataset.source || (control.dataset.screen === 'template-picker' ? 'template' : 'library');
-        planAddScope = control.dataset.scope || 'mine';
-        const targetPlanModule = currentPlanModuleId();
-        renderModule(targetPlanModule, control.dataset.screen);
+        renderModule('plan-list', control.dataset.screen);
         return;
       }
       if (action === 'back-plan') {
-        renderModule(currentPlanModuleId(), planReturnScreen);
+        renderModule('plan-list', planReturnScreen);
         return;
       }
       if (action === 'toggle-plan-library') {
@@ -3438,13 +4119,12 @@
       }
       if (action === 'save-plan-library') {
         planAddSource = 'library';
-        if (currentPlanModuleId() === 'plan-list-a') {
-          if (planAddScope === 'public') renderModule('plan-list-a', 'shared-edit-list');
-          else {
-            renderModule('plan-list-a', 'mine');
-            moduleToast('已添加到个人行李');
-          }
-        } else renderModule('plan-list', 'library-edit-list');
+        if (planMode === 'single') {
+          renderModule('plan-list', 'mine-single');
+          moduleToast('已直接添加到个人行李');
+          return;
+        }
+        renderModule('plan-list', 'batch-edit-list');
         return;
       }
       if (action === 'toggle-plan-template') {
@@ -3459,98 +4139,162 @@
       }
       if (action === 'save-plan-template' || action === 'use-plan-template') {
         planAddSource = 'template';
-        if (currentPlanModuleId() === 'plan-list-a') {
-          if (planAddScope === 'public') renderModule('plan-list-a', 'shared-edit-list');
-          else openModuleModal('confirm-template-personal');
-        } else renderModule('plan-list', 'template-edit-list');
+        if (planMode === 'single') {
+          renderModule('plan-list', 'mine-single');
+          moduleToast('模板物品已直接保存');
+          return;
+        }
+        renderModule('plan-list', 'batch-edit-list');
         return;
       }
       if (action === 'toggle-item-share') {
-        control.classList.toggle('on');
         const scope = control.closest('article, .gooh-form, .demo-modal') || moduleStage;
         const carrier = scope.querySelector('.conditional-carrier');
+        const turningOn = !control.classList.contains('on');
+        if (turningOn && teamItemExists(scope)) {
+          scope.dataset.shareBlocked = 'true';
+          if (carrier) carrier.hidden = true;
+          moduleToast('团队行李中已添加该物品');
+          return;
+        }
+        scope.dataset.shareBlocked = 'false';
+        control.classList.toggle('on');
+        control.setAttribute('aria-pressed', String(control.classList.contains('on')));
         if (carrier) carrier.hidden = !control.classList.contains('on');
-        return;
-      }
-      if (action === 'save-b-edit-personal') {
-        const shareEnabled = moduleStage.querySelector('.demo-modal-layer [data-module-action="toggle-item-share"]')?.classList.contains('on');
-        if (shareEnabled) openModuleModal('confirm-personal-to-shared');
-        else {
-          closeModuleModal();
-          moduleToast('行李已保存');
+        const inlineQuantity = scope.querySelector('.personal-quantity, .quantity-field');
+        if (inlineQuantity) inlineQuantity.hidden = control.classList.contains('on');
+        if (turningOn) {
+          const allMode = carrier?.querySelector('[data-mode="all"]');
+          allMode?.click();
         }
         return;
       }
-      if (action === 'save-b-edit-shared') {
-        const shareEnabled = moduleStage.querySelector('.demo-modal-layer [data-module-action="toggle-item-share"]')?.classList.contains('on');
-        if (!shareEnabled) openModuleModal('confirm-shared-to-personal');
-        else {
-          closeModuleModal();
-          moduleToast('行李已保存');
-        }
+      if (action === 'set-inline-carry-mode') {
+        const setting = control.closest('.inline-carry-setting');
+        setting.dataset.carryMode = control.dataset.mode;
+        setting.querySelectorAll('.inline-carry-tabs button').forEach(button => button.classList.toggle('selected', button === control));
+        setting.querySelector('.all-carry-count').hidden = control.dataset.mode !== 'all';
+        setting.querySelector('.member-carry-counts').hidden = control.dataset.mode !== 'custom';
         return;
       }
-      if (action === 'confirm-personal-to-shared' || action === 'confirm-shared-to-personal') {
+      if (action === 'dismiss-weather') {
+        control.closest('.weather-recommendation')?.remove();
+        return;
+      }
+      if (action === 'save-personal-item') {
+        const name = moduleStage.querySelector('.demo-modal-layer input[maxlength="20"]')?.value.trim();
+        if (!name) {
+          moduleToast('请输入物品名称');
+          return;
+        }
+        if (blockedShareScopes().length) {
+          moduleToast('团队行李已存在');
+          return;
+        }
+        if (!validCarryQuantities(moduleStage.querySelector('.demo-modal .gooh-form'))) {
+          moduleToast('请为至少一位指定成员设置数量');
+          return;
+        }
         modalStack = [];
         renderModule('plan-list', 'mine');
-        moduleToast(action === 'confirm-personal-to-shared' ? '已合并为共同行李' : '已改为个人行李');
+        moduleToast('行李已保存');
         return;
       }
-      if (action === 'cancel-share-confirm') {
-        const keepOn = control.dataset.shareState === 'on';
-        closeModuleModal();
-        const toggle = moduleStage.querySelector('.demo-modal-layer [data-module-action="toggle-item-share"]');
-        const carrier = moduleStage.querySelector('.demo-modal-layer .conditional-carrier');
-        if (toggle) toggle.classList.toggle('on', keepOn);
-        if (carrier) carrier.hidden = !keepOn;
-        return;
-      }
-      if (action === 'save-unified-custom') {
+      if (action === 'save-single-item') {
+        const name = moduleStage.querySelector('.demo-modal-layer input[maxlength="20"]')?.value.trim();
+        if (!name) {
+          moduleToast('请输入物品名称');
+          return;
+        }
         modalStack = [];
-        renderModule(currentPlanModuleId(), 'mine');
+        renderModule('plan-list', 'mine-single');
+        moduleToast('行李已保存');
+        return;
+      }
+      if (action === 'save-team-item') {
+        const name = moduleStage.querySelector('.demo-modal-layer input[maxlength="20"]')?.value.trim();
+        if (!name) {
+          moduleToast('请输入物品名称');
+          return;
+        }
+        if (blockedShareScopes().length) {
+          moduleToast('团队行李中已添加该物品');
+          return;
+        }
+        if (!validCarryQuantities(moduleStage.querySelector('.demo-modal .gooh-form'))) {
+          moduleToast('请为至少一位指定成员设置数量');
+          return;
+        }
+        modalStack = [];
+        renderModule('plan-list', 'discussion');
+        moduleToast('团队行李已保存');
+        return;
+      }
+      if (action === 'save-and-continue') {
+        const form = control.closest('.demo-modal')?.querySelector('.gooh-form');
+        const name = form?.querySelector('input[maxlength="20"]');
+        if (!name?.value.trim()) { moduleToast('请输入物品名称'); name?.focus(); return; }
+        if (blockedShareScopes().length) { moduleToast('团队行李中已添加该物品'); return; }
+        if (!validCarryQuantities(form)) { moduleToast('请为至少一位指定成员设置数量'); return; }
+        name.value = '';
+        form.querySelectorAll('.gooh-stepper').forEach(stepper => {
+          const count = stepper.querySelector('[data-count]');
+          if (count) count.textContent = stepper.closest('.member-carry-counts') ? '0' : '1';
+        });
+        name.focus();
+        moduleToast('已保存，可继续添加');
+        return;
+      }
+      if (action === 'back-batch-edit') {
+        renderModule('plan-list', planAddSource === 'template' ? 'template-picker-detail' : 'library-picker');
+        return;
+      }
+      if (action === 'save-batch-edit-list') {
+        if (Array.from(moduleStage.querySelectorAll('.shared-edit-list article')).some(scope => !validCarryQuantities(scope))) {
+          moduleToast('请为至少一位指定成员设置数量');
+          return;
+        }
+        if (blockedShareScopes().length) {
+          moduleToast('团队行李已存在');
+          return;
+        }
+        renderModule('plan-list', 'mine');
         moduleToast('行李已添加');
         return;
       }
-      if (action === 'save-library-edit-list') {
-        const duplicateNames = Array.from(moduleStage.querySelectorAll('article[data-duplicate-shared="true"]'))
-          .filter(item => item.querySelector('[data-module-action="toggle-item-share"]')?.classList.contains('on'))
-          .map(item => item.dataset.itemName);
-        if (duplicateNames.length) {
-          openModuleModal('confirm-library-share-merge');
-          const list = moduleStage.querySelector('[data-duplicate-list]');
-          if (list) list.innerHTML = duplicateNames.map(name => `<li>${name}</li>`).join('');
-        } else {
-          renderModule(currentPlanModuleId(), 'mine');
-          moduleToast('已添加 2 件行李');
+      if (action === 'choose-carry-mode') {
+        control.parentElement.querySelectorAll('button').forEach(button => button.classList.remove('selected'));
+        control.classList.add('selected');
+        const custom = moduleStage.querySelector('.carry-custom-members');
+        if (custom) custom.hidden = control.dataset.mode !== 'custom';
+        return;
+      }
+      if (action === 'toggle-carriers') {
+        const list = control.nextElementSibling;
+        if (list) {
+          list.hidden = !list.hidden;
+          control.textContent = list.hidden ? '展开携带成员⌄' : '收起携带成员⌃';
         }
         return;
       }
-      if (action === 'save-template-edit-list') {
-        const duplicateNames = Array.from(moduleStage.querySelectorAll('article[data-duplicate-shared="true"]'))
-          .filter(item => item.querySelector('[data-module-action="toggle-item-share"]')?.classList.contains('on'))
-          .map(item => item.dataset.itemName);
-        if (duplicateNames.length) {
-          openModuleModal('confirm-template-share-merge');
-          const list = moduleStage.querySelector('[data-duplicate-list]');
-          if (list) list.innerHTML = duplicateNames.map(name => `<li>${name}</li>`).join('');
-        } else openModuleModal('confirm-template-apply');
-        return;
-      }
-      if (action === 'confirm-batch-share-merge') {
-        if (control.dataset.next === 'template') replaceTopModal('confirm-template-apply');
-        else {
-          modalStack = [];
-          renderModule('plan-list', 'mine');
-          moduleToast('同名共同行李已合并');
+      if (action === 'toggle-template-sort') {
+        const list = moduleStage.querySelector('.template-category-list');
+        const sorting = list?.classList.toggle('sorting');
+        control.textContent = sorting ? '完成' : '排序';
+        if (!sorting) {
+          const clean = moduleStage.cloneNode(true);
+          clean.querySelectorAll('.demo-toast, .demo-modal-layer').forEach(node => node.remove());
+          assetModule.screens['template-detail'] = clean.innerHTML;
         }
         return;
       }
-      if (action === 'save-shared-edit-list') {
-        if (planAddSource === 'template') openModuleModal('confirm-template-shared');
-        else {
-          renderModule(currentPlanModuleId(), 'mine');
-          moduleToast('团队行李已保存');
-        }
+      if (action === 'move-template-category' || action === 'move-template-item') {
+        const row = control.closest(action === 'move-template-category' ? '.template-category-card' : '.template-item-row');
+        const sibling = control.dataset.direction === 'up' ? row?.previousElementSibling : row?.nextElementSibling;
+        if (!row || !sibling || !sibling.classList.contains(row.className)) return;
+        if (control.dataset.direction === 'up') row.parentElement.insertBefore(row, sibling);
+        else row.parentElement.insertBefore(sibling, row);
+        moduleToast('排序已调整');
         return;
       }
       if (action === 'toggle-template-asset') {
@@ -3573,6 +4317,20 @@
         return;
       }
       if (action === 'open-modal') {
+        if (control.dataset.modal === 'carry-scope') {
+          const scope = control.closest('article, .gooh-form, .demo-modal') || moduleStage;
+          carryScopeSource = {
+            scope,
+            toggle: scope.querySelector('[data-module-action="toggle-item-share"]'),
+            carrier: control,
+            openedFromToggle: false,
+            formState: {
+              name: scope.querySelector('input[maxlength="20"]')?.value || '',
+              count: scope.querySelector('[data-count]')?.textContent || '1',
+              category: scope.querySelector('[data-category-value]')?.textContent || '其他',
+            },
+          };
+        }
         openModuleModal(control.dataset.modal, control.dataset.note || control.dataset.modal);
         return;
       }
@@ -3591,23 +4349,6 @@
           const copy = moduleStage.querySelector('[data-share-confirm-copy]');
           if (copy) copy.textContent = control.classList.contains('on') ? '将同步给所有计划成员，所有成员均可看到。' : '仅加入你的个人行李，不同步给其他成员。';
         }
-        return;
-      }
-      if (action === 'save-personal-custom') {
-        if (moduleStage.querySelector('.demo-modal-layer .demo-switch.on')) openModuleModal('confirm-library-shared');
-        else openModuleModal('confirm-library-personal');
-        return;
-      }
-      if (action === 'save-edit-personal') {
-        if (moduleStage.querySelector('.demo-modal-layer .demo-switch.on')) openModuleModal('confirm-library-shared');
-        else { closeModuleModal(); moduleToast('个人行李已保存'); }
-        return;
-      }
-      if (action === 'confirm-plan-add') {
-        const mode = moduleStage.querySelector('[data-module-action="apply-mode"].selected')?.dataset.mode || 'merge';
-        modalStack = [];
-        renderModule(currentPlanModuleId(), 'mine');
-        moduleToast(mode === 'replace' ? '已替换现有行李' : '已合并模板行李');
         return;
       }
       if (action === 'check') {
@@ -3643,7 +4384,8 @@
       }
       if (action === 'step') {
         const counter = control.parentElement.querySelector('[data-count]');
-        const value = Math.max(1, Math.min(99, Number(counter.textContent) + Number(control.dataset.delta)));
+        const minimum = Number(control.parentElement.dataset.min ?? 1);
+        const value = Math.max(minimum, Math.min(99, Number(counter.textContent) + Number(control.dataset.delta)));
         counter.textContent = String(value);
         return;
       }
@@ -3698,59 +4440,47 @@
         }
         return;
       }
-      if (action === 'plan-choice') {
-        control.parentElement.querySelectorAll('button').forEach(button => button.classList.remove('selected'));
-        control.classList.add('selected');
-        const empty = control.dataset.planState === 'empty';
-        const detection = moduleStage.querySelector('[data-detection] span');
-        if (detection) detection.textContent = empty ? '这个计划还没有行李；模板中的 12 件物品将直接加入。' : '模板 12 件；新增 9 件；3 件重复不会再次添加。';
-        const applyOptions = moduleStage.querySelector('[data-apply-options]');
-        if (applyOptions) applyOptions.hidden = empty;
-        const confirmButton = moduleStage.querySelector('[data-confirm-template]');
-        if (confirmButton) confirmButton.textContent = empty ? '确认加入 12 件' : '确认合并';
-        const replace = moduleStage.querySelector('[data-mode="replace"]');
-        if (replace) replace.disabled = empty;
-        if (modalStack.length) {
-          modalStack[modalStack.length - 1].noteId = empty ? 'apply-empty' : 'apply-existing';
-          renderContextNotes('modal', 'apply', modalStack[modalStack.length - 1].noteId);
-        }
-        return;
-      }
-      if (action === 'template-plan-state') {
-        control.parentElement.querySelectorAll('button').forEach(button => button.classList.remove('selected'));
-        control.classList.add('selected');
-        const empty = control.dataset.planState === 'empty';
-        const personal = modalStack.at(-1)?.id === 'confirm-template-personal';
-        const detection = moduleStage.querySelector('[data-template-detection]');
-        const result = moduleStage.querySelector('[data-template-result]');
-        const options = moduleStage.querySelector('[data-apply-options]');
-        const confirm = moduleStage.querySelector('[data-confirm-template]');
-        if (detection) detection.textContent = empty ? (personal ? '当前还没有个人行李' : '当前计划还没有行李') : (personal ? '当前已有 4 件个人行李 · 1 件与模板重复' : '当前已有 5 件行李 · 2 件与模板重复');
-        if (result) result.textContent = empty ? '模板共 12 件，将直接加入全部物品。' : (personal ? '模板共 12 件，合并后新增 11 件。' : '模板共 12 件，合并后新增 10 件。');
-        if (options) options.hidden = empty;
-        if (confirm) confirm.textContent = empty ? '确认加入 12 件' : '确认合并';
-        return;
-      }
-      if (action === 'apply-mode') {
-        control.parentElement.querySelectorAll('button').forEach(button => button.classList.remove('selected'));
-        control.classList.add('selected');
-        const replace = control.dataset.mode === 'replace';
-        const hint = moduleStage.querySelector('[data-mode-hint]');
-        const confirm = moduleStage.querySelector('[data-module-action="confirm-plan-add"]');
-        if (hint) hint.textContent = replace ? '删除当前清单后加入模板中的全部行李' : '保留现有行李，重复项不会再次添加';
-        if (confirm) confirm.textContent = replace ? '确认替换原清单' : '确认合并';
-        return;
-      }
-      if (action === 'confirm-template') {
-        const mode = moduleStage.querySelector('[data-module-action="apply-mode"].selected');
-        moduleToast(mode && mode.dataset.mode === 'replace' ? '已确认替换' : (moduleStage.querySelector('[data-apply-options]')?.hidden ? '模板物品已加入计划' : '已合并；重复物品未再次添加'));
-        return;
-      }
       if (action === 'save-carry-scope') {
+        const mode = moduleStage.querySelector('[data-module-action="choose-carry-mode"].selected')?.dataset.mode || 'all';
         const members = Array.from(moduleStage.querySelectorAll('[data-carry-member]'));
-        if (!members.some(input => input.checked)) return;
+        if (mode === 'custom' && !members.some(input => input.checked)) return;
+        const selectedCount = members.filter(input => input.checked).length;
+        const selectedMembers = members.filter(input => input.checked).map(input => input.value);
+        const sourceBeforeClose = carryScopeSource;
         closeModuleModal();
+        const scope = resolveCarryScope(sourceBeforeClose);
+        restoreCarryForm(scope, sourceBeforeClose?.formState);
+        const carrier = scope?.querySelector('.carrier-field');
+        const toggle = scope?.querySelector('[data-module-action="toggle-item-share"]');
+        if (toggle) toggle.classList.add('on');
+        if (carrier) {
+          carrier.hidden = false;
+          const label = carrier.querySelector('b');
+          if (label) {
+            label.innerHTML = mode === 'all'
+              ? '所有成员'
+              : `<span class="carrier-selected-summary"><span class="carry-avatar-stack"><i>我</i><i>林</i><i>周</i></span><span>${selectedMembers.slice(0, 2).join('、')}${selectedCount > 2 ? '等' : ''} ${selectedCount} 人</span></span>`;
+          }
+        }
+        if (scope) {
+          scope.dataset.carryMode = mode;
+          scope.dataset.carryCount = mode === 'all' ? 'all' : String(selectedCount);
+          scope.dataset.carryMembers = mode === 'all' ? '' : selectedMembers.join('|');
+        }
+        carryScopeSource = null;
         moduleToast('携带范围已更新');
+        return;
+      }
+      if (action === 'close-carry-scope') {
+        const sourceBeforeClose = carryScopeSource;
+        closeModuleModal();
+        const scope = resolveCarryScope(sourceBeforeClose);
+        restoreCarryForm(scope, sourceBeforeClose?.formState);
+        if (carryScopeSource?.openedFromToggle) {
+          carryScopeSource.toggle?.classList.remove('on');
+          if (carryScopeSource.carrier) carryScopeSource.carrier.hidden = true;
+        }
+        carryScopeSource = null;
         return;
       }
       if (action === 'delete-opinion-modal') {
@@ -3761,9 +4491,12 @@
       if (action === 'save-opinion-modal') {
         const input = moduleStage.querySelector('#opinion-text');
         if (!input?.value.trim()) { moduleToast('请输入意见内容'); return; }
-        if (modalStack.length >= 2) modalStack.splice(modalStack.length - 2, 2, { id: 'opinions', noteId: 'opinions' });
-        else replaceTopModal('opinions');
-        showTopModal();
+        const source = modalStack.at(-2)?.id;
+        const item = source === 'discussion-item-info-charger' ? teamItems[1] : source === 'discussion-item-info-empty' ? teamItems[2] : teamItems[0];
+        item.opinions['我'] = input.value.trim();
+        item.comments = Object.keys(item.opinions).length;
+        refreshTeamOpinions();
+        closeModuleModal();
         moduleToast('意见已保存');
         return;
       }
@@ -3799,7 +4532,7 @@
       const count = moduleStage.querySelector(`[data-count-for="${input.id}"]`);
       if (count) count.textContent = String(input.value.length);
       if (input.id === 'opinion-text') {
-        const button = moduleStage.querySelector('[data-module-action="save-opinion"]');
+        const button = moduleStage.querySelector('[data-module-action="save-opinion-modal"]');
         if (button) button.disabled = !input.value.trim();
       }
     });
